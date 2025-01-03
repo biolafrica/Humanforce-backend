@@ -4,6 +4,7 @@ const Team = require("../model/teamModel");
 const Business = require("../model/businessModel");
 const WorkingHours = require("../model/workingHoursModel");
 const Attendance = require("../model/attendance");
+const attendance = require("../model/attendance");
 
 
 const regPost = async(req, res)=>{
@@ -229,7 +230,24 @@ const getAttendances = async(req, res)=>{
   
 }
 
-const getAttendance = async(req, res)=>{}
+const getAttendance = async(req, res)=>{
+  const {id} = req.params;
+
+  try {
+    const user = await User.findById(id);
+    if(!user){
+      return res.status(404).json({error: "users not found"});
+    }
+
+    const attendance = await Attendance.find({staff_code: user.staff_code});
+    res.status(200).json({attendance, user});
+    
+  } catch (error) {
+    console.log("Error fetching the user attendances", error);
+    res.status(500).json({error : "Failed to fetch user attendance"});
+    
+  }
+}
 
 
 

@@ -13,6 +13,7 @@ router.get("/working-hours", adminController.getWorkingHours);
 router.get("/team", adminController.teamGet);
 router.get("/business", adminController.businessGet);
 router.get("/attendances", adminController.getAttendances);
+router.get("/attendance/:id", adminController.getAttendance);
 
 
 module.exports = router;
