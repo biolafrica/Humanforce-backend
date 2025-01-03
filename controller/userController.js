@@ -176,6 +176,8 @@ const getClock = async(req, res)=>{
 
 }
 
+
+
 // to update specific attendance schema
 const patchClock = async(req, res)=>{
   const {id} = req.params;
@@ -232,7 +234,6 @@ const patchClock = async(req, res)=>{
   }
 
 }
-
 
 
 module.exports = {

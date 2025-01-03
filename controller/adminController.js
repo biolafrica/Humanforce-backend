@@ -3,6 +3,7 @@ const sendRegistrationEmail = require("../Middleware/mailer");
 const Team = require("../model/teamModel");
 const Business = require("../model/businessModel");
 const WorkingHours = require("../model/workingHoursModel");
+const Attendance = require("../model/attendance");
 
 
 const regPost = async(req, res)=>{
@@ -214,6 +215,22 @@ const getWorkingHours = async(req, res)=>{
 
 }
 
+const getAttendances = async(req, res)=>{
+
+  try {
+    const attendances = await Attendance.find();
+    res.json({attendances});
+    
+  } catch (error) {
+    console.log("Error fetching all attendance:", error)
+    res.status(500).json({error : "Failed to fetch all attendance"})
+    
+  }
+  
+}
+
+const getAttendance = async(req, res)=>{}
+
 
 
 module.exports = {
@@ -225,4 +242,6 @@ module.exports = {
   businessGet,
   patchWorkingHours,
   getWorkingHours,
+  getAttendance,
+  getAttendances
 }
