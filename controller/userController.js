@@ -177,7 +177,6 @@ const getClock = async(req, res)=>{
 }
 
 
-
 // to update specific attendance schema
 const patchClock = async(req, res)=>{
   const {id} = req.params;
@@ -235,6 +234,32 @@ const patchClock = async(req, res)=>{
 
 }
 
+const getAttendance = async(req, res)=>{
+  const token = req.headers.authorization?.split(" ")[1];
+
+  try {
+
+    const user = await authToken(token);
+    if(!user){
+      return res.status(404).json({error:"error authenticating user"});
+    }
+
+    const staff = await User.findOne({_id:user.id});
+    if(!staff){
+      return res.status(404).json({error:"Staff not found"});
+    }
+
+    const attendance = await Attendance.find({staff_code: staff.staff_code});
+    res.status(200).json({attendance});
+    
+  } catch (error) {
+    console.log("Error fetching the user attendances", error);
+    res.status(500).json({error : "Failed to fetch user attendance"});
+    
+  }
+
+}
+
 
 module.exports = {
   login,
@@ -242,5 +267,6 @@ module.exports = {
   getClock,
   patchClock,
   postClocked,
+  getAttendance,
  
 }
