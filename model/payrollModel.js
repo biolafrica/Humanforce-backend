@@ -1,9 +1,14 @@
 const mongoose = require("mongoose");
 
-const contractStaffSchema = new mongoose.Schema({
-  staff_code:{
+const fixedStaffSchema = new mongoose.Schema({
+  staff_id:{
     type :String,
     default : "",
+  },
+
+  staff_type:{
+    type : String,
+    default: "fixed",
   },
 
   createdAt:{
@@ -58,11 +63,16 @@ const contractStaffSchema = new mongoose.Schema({
  
 })
 
-const fixedStaffSchema = new mongoose.Schema({
+const contractStaffSchema = new mongoose.Schema({
 
-  staff_code:{
+  staff_id:{
     type :String,
     default : "",
+  },
+
+  staff_type:{
+    type : String,
+    default: "contract",
   },
 
   createdAt:{
@@ -184,6 +194,6 @@ const fixedStaffSchema = new mongoose.Schema({
 })
 
 
-
-module.exports = mongoose.model("ContractStaff", contractStaffSchema, "Payroll")
-module.exports = mongoose.model("FixedStaff", fixedStaffSchema, "Payroll");
+const FixedStaff = mongoose.model("FixedStaff", fixedStaffSchema, "Payroll");
+const ContractStaff = mongoose.model("ContractStaff", contractStaffSchema, "Payroll");
+module.exports = {FixedStaff,ContractStaff};

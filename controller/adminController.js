@@ -4,7 +4,7 @@ const Team = require("../model/teamModel");
 const Business = require("../model/businessModel");
 const WorkingHours = require("../model/workingHoursModel");
 const Attendance = require("../model/attendance");
-const attendance = require("../model/attendance");
+const {ContractStaff, FixedStaff} = require("../model/payrollModel");
 
 
 const regPost = async(req, res)=>{
@@ -249,6 +249,65 @@ const getAttendance = async(req, res)=>{
   }
 }
 
+const getAllPayroll = async(req, res)=>{
+ 
+  try {
+    const contract_staff = await ContractStaff.find({staff_type : "contract"});
+    const fixed_staff = await FixedStaff.find({staff_type : "fixed"});
+    const users = await User.find();
+
+    if(!contract_staff || !users || !fixed_staff){
+      return res.status(404).json({error : "error fetching all payroll"});
+    }
+
+    res.json({fixed_staff,contract_staff, users});
+
+  } catch (error) {
+    console.log("Error fetching all payroll:", error)
+    res.status(500).json({error : "Failed to fetch all payroll"})
+    
+  }
+
+}
+
+const getSinglePayroll = async(req, res)=>{
+  const {id} = req.params;
+
+  try {
+    const user = await User.findById(id);
+    if(!user){
+      return res.status(404).json({error : "error fetching user"});
+    }
+
+    const payroll = user.employment_type === "contract" ? 
+    await ContractStaff.find({staff_id : id}) : 
+    await FixedStaff.find({staff_id : id})
+   
+    if(!payroll){
+      return res.status(404).json({error : "error fetching user's payroll "});
+    }
+
+    res.status(200).json({
+      payroll,
+      name :{
+        firstname : user.firstname,
+        lastname : user.lastname
+      },
+    });
+    
+    
+  } catch (error) {
+    
+  }
+
+}
+
+const patchPayrollDetails = async(req, res)=>{
+  const {id} = req.params;
+
+}
+
+
 
 
 module.exports = {
@@ -261,5 +320,8 @@ module.exports = {
   patchWorkingHours,
   getWorkingHours,
   getAttendance,
-  getAttendances
+  getAttendances,
+  getAllPayroll,
+  getSinglePayroll,
+  patchPayrollDetails
 }

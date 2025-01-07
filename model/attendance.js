@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 const { type } = require("os");
 
 const attendanceSchema = new mongoose.Schema({
-  staff_code:{
+  staff_id:{
     type : String
   }, 
   clock_in:{
