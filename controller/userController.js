@@ -313,6 +313,57 @@ const getAttendance = async(req, res)=>{
 
 }
 
+const getUserPayslip = async(req, res)=>{
+  const token = req.headers.authorization?.split(" ")[1];
+  try {
+
+    const user = await authToken(token);
+    if(!user){
+      return res.status(404).json({error:"error authenticating user"});
+    }
+
+    const staff = await User.findOne({_id:user.id});
+    if(!staff){
+      return res.status(404).json({error:"Staff not found"});
+    }
+
+    let payroll = [];
+    if(staff.employment_type === "contract")
+    {
+      payroll = await ContractStaff.find({staff_id: staff._id});
+    }
+    else if(staff.employment_type === "fixed")
+    {
+      payroll = await FixedStaff.find({staff_id: staff._id});
+    }
+
+    const formattedPayroll = payroll.reduce((acc, item)=>{
+      const month = new Date(item.createdAt).toLocaleString("default", {
+        month : "long",
+        year : "numeric"
+      })
+
+      const year = new Date(item.createdAt).getFullYear().toString();
+
+      if(!item[year]){
+        acc[year] = []
+      };
+
+      acc[year].push(item);
+
+      return acc;
+
+    }, {});
+
+    res.status(200).json({formattedPayroll})
+    
+  } catch (error) {
+    console.error(" Error fetching payslip data:", error)
+    res.status(500).json({error : "An error occured while fetching payslip data"});
+  }
+
+}
+
 
 module.exports = {
   login,
@@ -321,5 +372,6 @@ module.exports = {
   patchClock,
   postClocked,
   getAttendance,
+  getUserPayslip
  
 }

@@ -17,7 +17,7 @@ router.get("/attendance/:id", adminController.getAttendance);
 router.get("/payrolls/", adminController.getAllPayroll);
 router.get("/payroll/:id", adminController.getSinglePayroll);
 
-router.patch("/payroll/:id", adminController.patchPayrollDetails);
+router.post("/payroll/:id", adminController.postPayrollDetails);
 
 
 module.exports = router;

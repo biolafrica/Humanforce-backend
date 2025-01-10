@@ -272,6 +272,7 @@ const getAllPayroll = async(req, res)=>{
 
 const getSinglePayroll = async(req, res)=>{
   const {id} = req.params;
+  console.log(id)
 
   try {
     const user = await User.findById(id);
@@ -279,14 +280,37 @@ const getSinglePayroll = async(req, res)=>{
       return res.status(404).json({error : "error fetching user"});
     }
 
-    const payroll = user.employment_type === "contract" ? 
-    await ContractStaff.find({staff_id : id}) : 
-    await FixedStaff.find({staff_id : id})
-   
-    if(!payroll){
-      return res.status(404).json({error : "error fetching user's payroll "});
-    }
+    let payroll = null
+    if(user.employment_type === "contract"){
 
+      let contractPayroll = await ContractStaff.find({staff_id : id}).sort({createdAt: 1});
+
+      if(!contractPayroll || contractPayroll.length === 0 ){
+        return res.status(404).json({error : "No payroll data found for contract staff "});
+      }
+
+      payroll = contractPayroll.reduce((acc, item) => {
+        const monthYear = new Date(item.createdAt).toLocaleString('default',{month: 'long', year:'numeric'});
+        if(!acc[monthYear]){
+          acc[monthYear] = [];
+        }
+        acc[monthYear].push(item)
+        console.log(acc)
+        return acc;
+        
+      }, {});
+
+    }else if(user.employment_type === "fixed"){
+
+      payroll = await FixedStaff.find({staff_id : id})
+      if(!payroll || payroll.length === 0){
+        return res.status(404).json({error : "no payroll data found for fixed staff"});
+      }
+
+    }
+    
+    console.log(payroll);
+    
     res.status(200).json({
       payroll,
       name :{
@@ -302,8 +326,58 @@ const getSinglePayroll = async(req, res)=>{
 
 }
 
-const patchPayrollDetails = async(req, res)=>{
+const postPayrollDetails = async(req, res)=>{
   const {id} = req.params;
+  const formData = req.body;
+
+  try {
+    const currentDate = new Date();
+    const currentMonthStart = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+    const currentMonthEnd = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+
+    const user = await User.findById(id);
+    let updatedPayroll;
+    if(user.employment_type === "fixed"){
+      updatedPayroll = await FixedStaff.findOneAndUpdate(
+        {staff_id : id,
+          createdAt:{
+            $gte: currentMonthStart,
+            $lte: currentMonthEnd
+          },
+          
+        },
+        {$set: formData},  
+        {new: true, upsert: true}
+      );
+    }else if(user.employment_type === "contract"){
+      updatedPayroll = await ContractStaff.findOneAndUpdate(
+        {staff_id : id,
+          createdAt:{
+            $gte: currentMonthStart,
+            $lte: currentMonthEnd
+          },
+        },
+        {$set: formData},
+        {new: true, upsert: true}
+      )
+    }else{
+      return res.status(400).json({error: "Inavalid staff type"})
+    }
+    
+    if(!updatedPayroll){
+      return res.status(404).json({error: "Payroll not found or couldn't be created"})
+    }
+    console.log(updatedPayroll);
+    res.status(200).json({
+      message: "Payroll updated succesfully",
+      payroll: updatedPayroll,
+    });
+
+  } catch (error) {
+    console.error("Error updating payroll:", error)
+    res.status(500).json({error: "Internal Server Error. Please try again"})
+  
+  }
 
 }
 
@@ -323,5 +397,5 @@ module.exports = {
   getAttendances,
   getAllPayroll,
   getSinglePayroll,
-  patchPayrollDetails
+  postPayrollDetails
 }

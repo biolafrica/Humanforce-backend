@@ -8,6 +8,7 @@ router.post("/clocked", userController.postClocked);
 router.patch("/clock/:id", userController.patchClock);
 router.get("/clock/:id", userController.getClock);
 router.get("/attendance/", userController.getAttendance);
+router.get("/payslip/", userController.getUserPayslip);
 
 
 
