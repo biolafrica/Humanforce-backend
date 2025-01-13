@@ -98,7 +98,7 @@ userSchema.pre("save", async function (next){
   next();
 });
 
-
+//
 userSchema.statics.login = async function(staff_code){
   try {
     const user = await this.findOne({staff_code});

@@ -69,6 +69,7 @@ const postClock = async(req, res)=>{
   
   try {
     const user = await authToken(token);
+    
     const staff = await User.findOne({_id:user.id});
 
     if(!staff){
@@ -186,13 +187,13 @@ const postClocked = async(req, res)=>{
     if(!staff){
       return res.status(404).json({error:"Staff not found"});
     }
-    const staff_code = staff.staff_code;
+    const staff_id = staff._id;
 
     const startOfDay = day().startOfDay;
     const endOfDay = day().endOfDay;
 
     let attendance = await Attendance.findOne({
-      staff_code,
+      staff_id,
       createdAt:{$gte: startOfDay, $lte: endOfDay}
     });
 
@@ -302,7 +303,7 @@ const getAttendance = async(req, res)=>{
       return res.status(404).json({error:"Staff not found"});
     }
 
-    const attendance = await Attendance.find({staff_code: staff.staff_code});
+    const attendance = await Attendance.find({staff_id: staff._id});
     res.status(200).json({attendance});
     
   } catch (error) {

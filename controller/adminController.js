@@ -4,7 +4,15 @@ const Team = require("../model/teamModel");
 const Business = require("../model/businessModel");
 const WorkingHours = require("../model/workingHoursModel");
 const Attendance = require("../model/attendance");
+const jwt = require("jsonwebtoken");
 const {ContractStaff, FixedStaff} = require("../model/payrollModel");
+
+
+const maxAge = 3*24*60*60;
+const jwtSecret = process.env.adminjwtSecret;
+const createToken = (id)=>{
+  return jwt.sign({id}, jwtSecret, {expiresIn :maxAge})
+}
 
 
 const regPost = async(req, res)=>{
@@ -309,7 +317,6 @@ const getSinglePayroll = async(req, res)=>{
 
     }
     
-    console.log(payroll);
     
     res.status(200).json({
       payroll,
@@ -321,6 +328,7 @@ const getSinglePayroll = async(req, res)=>{
     
     
   } catch (error) {
+    res.status(500).json({error: error.message});
     
   }
 
@@ -381,6 +389,42 @@ const postPayrollDetails = async(req, res)=>{
 
 }
 
+const login = async(req, res)=>{
+  const{staff_code} = req.body;
+
+  try {
+    const user = await User.login(staff_code);
+    const team = await Team.findOne({staff_code : user.staff_code});
+
+    if(!team){
+      return  res.status(400).json({error: "invalid Team member"})
+    }
+
+    const token = createToken(team._id);
+    res.cookie("adminAuthToken", token, {
+      maxAge: 1000 * maxAge,
+      httpOnly: true,
+    });
+
+    res.status(200).json({
+      token : token,
+      team:{
+        email: user.email_address,
+        firstname : user.firstname,
+        lastname : user.lastname,
+        role : team.team_role
+      },
+      
+    });
+    
+  } catch (error) {
+    console.log("Error logging team;", error);
+    res.status(500).json({error: error.message});
+    
+  }
+
+}
+
 
 
 
@@ -397,5 +441,6 @@ module.exports = {
   getAttendances,
   getAllPayroll,
   getSinglePayroll,
-  postPayrollDetails
+  postPayrollDetails,
+  login
 }

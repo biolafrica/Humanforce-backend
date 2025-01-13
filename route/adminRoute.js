@@ -7,6 +7,7 @@ router.post("/staff", adminController.regPost);
 router.post("/team", adminController.teamPost);
 router.post("/working-hours", adminController.patchWorkingHours);
 router.post("/business", adminController.saveOrUpdateBusiness);
+router.post("/login", adminController.login);
 
 router.get("/staff", adminController.staffGet);
 router.get("/working-hours", adminController.getWorkingHours);

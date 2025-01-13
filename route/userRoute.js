@@ -11,5 +11,4 @@ router.get("/attendance/", userController.getAttendance);
 router.get("/payslip/", userController.getUserPayslip);
 
 
-
 module.exports = router;
