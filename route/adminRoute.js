@@ -10,6 +10,7 @@ router.post("/business", adminController.saveOrUpdateBusiness);
 router.post("/login", adminController.login);
 
 router.get("/staff", adminController.staffGet);
+router.get("/staff/:id", adminController.getSelectedUser);
 router.get("/working-hours", adminController.getWorkingHours);
 router.get("/team", adminController.teamGet);
 router.get("/business", adminController.businessGet);

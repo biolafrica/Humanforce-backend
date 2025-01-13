@@ -35,11 +35,28 @@ const authToken = async(token)=>{
   }
 
 
+};
+
+const adminAuthToken = async(token)=>{
+  try {
+    const decoded = jwt.verify(token, process.env.adminjwtSecret);
+    //console.log("Decoded token:", decoded);
+    return decoded;
+    
+  } catch (error) {
+    console.log('Token verification error:', error.message)
+    throw new Error ("Inavlid or expired token")
+    
+    
+  }
+
+
 }
 
 
 module.exports = 
 {
   requireAuth,
-  authToken
+  authToken,
+  adminAuthToken
 }

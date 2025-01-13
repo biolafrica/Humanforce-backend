@@ -6,6 +6,7 @@ const WorkingHours = require("../model/workingHoursModel");
 const Attendance = require("../model/attendance");
 const jwt = require("jsonwebtoken");
 const {ContractStaff, FixedStaff} = require("../model/payrollModel");
+const { adminAuthToken } = require("../Middleware/auth");
 
 
 const maxAge = 3*24*60*60;
@@ -76,6 +77,34 @@ const staffGet = async(req, res)=>{
 
 };
 
+const getSelectedUser = async(req, res)=>{
+  const token = req.headers.authorization?.split(" ")[1];
+  const {id} = req.params;
+
+  try {
+    const decodedToken = await adminAuthToken(token);
+    console.log(decodedToken);
+    if(!decodedToken){
+      return res.status(404).json({error:"error authenticating user"});
+    }
+
+    const staff = await User.findOne({_id:id});
+    if(!staff){
+      return res.status(404).json({error:"Staff not found"});
+    }
+
+    console.log(staff)
+
+    res.status(200).json({staff})
+    
+  } catch (error) {
+    console.log("Error fetching staff", error)
+    res.status(500).json({error :error.message})
+  }
+
+}
+
+
 const teamPost = async(req, res)=>{
   const{
     staff_code,
@@ -119,6 +148,7 @@ const teamGet = async(req,res)=>{
   }
 
 }
+
 
 const saveOrUpdateBusiness = async (req, res)=>{
   try {
@@ -172,6 +202,7 @@ const businessGet = async(req, res)=>{
 
 }
 
+
 const patchWorkingHours = async(req, res)=>{
   const {days} = req.body;
 
@@ -224,6 +255,7 @@ const getWorkingHours = async(req, res)=>{
 
 }
 
+
 const getAttendances = async(req, res)=>{
 
   try {
@@ -256,6 +288,7 @@ const getAttendance = async(req, res)=>{
     
   }
 }
+
 
 const getAllPayroll = async(req, res)=>{
  
@@ -389,6 +422,7 @@ const postPayrollDetails = async(req, res)=>{
 
 }
 
+
 const login = async(req, res)=>{
   const{staff_code} = req.body;
 
@@ -442,5 +476,6 @@ module.exports = {
   getAllPayroll,
   getSinglePayroll,
   postPayrollDetails,
-  login
+  login,
+  getSelectedUser
 }
