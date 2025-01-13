@@ -8,6 +8,8 @@ router.post("/team", adminController.teamPost);
 router.post("/working-hours", adminController.patchWorkingHours);
 router.post("/business", adminController.saveOrUpdateBusiness);
 router.post("/login", adminController.login);
+router.post("/staff/:id", adminController.postUser);
+
 
 router.get("/staff", adminController.staffGet);
 router.get("/staff/:id", adminController.getSelectedUser);

@@ -181,9 +181,9 @@ const postClocked = async(req, res)=>{
   const {token} = req.body;
 
   try {
-    const user = await authToken(token);
+    const decodedToken = await authToken(token);
 
-    const staff = await User.findOne({_id:user.id});
+    const staff = await User.findOne({_id:decodedToken.id});
     if(!staff){
       return res.status(404).json({error:"Staff not found"});
     }
@@ -293,12 +293,12 @@ const getAttendance = async(req, res)=>{
 
   try {
 
-    const user = await authToken(token);
-    if(!user){
+    const decodedToken = await authToken(token);
+    if(!decodedToken){
       return res.status(404).json({error:"error authenticating user"});
     }
 
-    const staff = await User.findOne({_id:user.id});
+    const staff = await User.findOne({_id:decodedToken.id});
     if(!staff){
       return res.status(404).json({error:"Staff not found"});
     }
@@ -318,12 +318,12 @@ const getUserPayslip = async(req, res)=>{
   const token = req.headers.authorization?.split(" ")[1];
   try {
 
-    const user = await authToken(token);
-    if(!user){
+    const decodedToken = await authToken(token);
+    if(!decodedToken){
       return res.status(404).json({error:"error authenticating user"});
     }
 
-    const staff = await User.findOne({_id:user.id});
+    const staff = await User.findOne({_id:decodedToken.id});
     if(!staff){
       return res.status(404).json({error:"Staff not found"});
     }

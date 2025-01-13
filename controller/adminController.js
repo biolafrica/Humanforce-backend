@@ -83,7 +83,6 @@ const getSelectedUser = async(req, res)=>{
 
   try {
     const decodedToken = await adminAuthToken(token);
-    console.log(decodedToken);
     if(!decodedToken){
       return res.status(404).json({error:"error authenticating user"});
     }
@@ -93,13 +92,37 @@ const getSelectedUser = async(req, res)=>{
       return res.status(404).json({error:"Staff not found"});
     }
 
-    console.log(staff)
-
     res.status(200).json({staff})
     
   } catch (error) {
     console.log("Error fetching staff", error)
     res.status(500).json({error :error.message})
+  }
+
+}
+
+const postUser = async(req, res)=>{
+  const {id} = req.params;
+  const update = req.body;
+  //const token = req.headers.authorization?.split(" ")[1];
+
+  try {
+    const user = await User.findById(id);
+    if(!user){
+      return res.status(404).json({error: "User not found"});
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(id, update, {
+      new: true,
+      runValidators: true,
+    })
+
+    res.status(200).json({updatedUser})
+
+  } catch (error) {
+    console.log("Error updating User", error)
+    res.status(500).json({error :"An error occured while updating user"})
+    
   }
 
 }
@@ -477,5 +500,6 @@ module.exports = {
   getSinglePayroll,
   postPayrollDetails,
   login,
-  getSelectedUser
+  getSelectedUser,
+  postUser
 }
