@@ -133,7 +133,7 @@ const teamPost = async(req, res)=>{
     staff_code,
     team_role
   } = req.body;
-
+  console.log(staff_code, team_role)
   try {
     const team = await Team.create({
       staff_code,
@@ -172,6 +172,97 @@ const teamGet = async(req,res)=>{
 
 }
 
+const teamEdit = async(req, res)=>{
+  const {id} = req.params;
+  const {team_role} = req.body;
+
+  try {
+    const team = await Team.findById(id);
+    if(!team){
+      return res.status(404).json({error: "User not found"});
+    }
+
+    team.team_role = team_role;
+    const updatedTeam = await team.save();
+
+    console.log("UPDATE", updatedTeam)
+
+    res.status(200).json({updatedTeam})
+
+    
+  } catch (error) {
+    console.log("Error updating User", error)
+    res.status(500).json({error :"An error occured while updating user"})
+  }
+
+}
+
+const teamDelete = async(req, res)=>{
+  const {id} = req.params;
+  const token = req.headers.authorization?.split(" ")[1];
+  console.log(token)
+
+  try {
+
+    const decodedToken = await adminAuthToken(token);
+    if(!decodedToken){
+      return res.status(404).json({error:"error authenticating user"});
+    }
+     
+    const team = await Team.findById(id);
+    if(!team){
+      return res.status(404).json({error: "Team not found"});
+    };
+    console.log("team", team);
+
+    await Team.findByIdAndDelete(id);
+    res.status(200).json({message : "team deleted successfully"})
+
+    
+  } catch (error) {
+    console.log("Error updating User", error)
+    res.status(500).json({error :"An error occured while deleting team"})
+    
+  }
+}
+
+// change to staff id instead of code
+const getSelectedTeam = async(req, res)=>{
+  const token = req.headers.authorization?.split(" ")[1];
+  const {id} = req.params;
+
+  try {
+    const decodedToken = await adminAuthToken(token);
+    if(!decodedToken){
+      return res.status(404).json({error:"error authenticating user"});
+    }
+        
+    const team = await Team.findById(id);
+    if(!team){
+      return res.status(404).json({error: "Team not found"});
+    };
+
+    const user = await User.findOne({staff_code : team.staff_code})
+    if(!user){
+      return res.status(404).json({error: "user not found"});
+    };
+    console.log(team)
+
+    res.status(200).json({
+      firstname : user.firstname,
+      lastname : user.lastname,
+      role : team.team_role,
+      staff_code : team.staff_code
+    })
+
+    
+  } catch (error) {
+    console.log("Error fetching selected team member", error)
+    res.status(500).json({error :"An error occured while fetching selected team member"})
+    
+  }
+
+}
 
 const saveOrUpdateBusiness = async (req, res)=>{
   try {
@@ -501,5 +592,8 @@ module.exports = {
   postPayrollDetails,
   login,
   getSelectedUser,
-  postUser
+  postUser,
+  teamDelete,
+  teamEdit,
+  getSelectedTeam
 }

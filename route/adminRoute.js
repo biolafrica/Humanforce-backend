@@ -5,6 +5,8 @@ const router = Router();
 
 router.post("/staff", adminController.regPost);
 router.post("/team", adminController.teamPost);
+router.delete("/team-delete/:id", adminController.teamDelete);
+router.post("/team-edit/:id", adminController.teamEdit);
 router.post("/working-hours", adminController.patchWorkingHours);
 router.post("/business", adminController.saveOrUpdateBusiness);
 router.post("/login", adminController.login);
@@ -14,6 +16,7 @@ router.post("/staff/:id", adminController.postUser);
 router.get("/staff", adminController.staffGet);
 router.get("/staff/:id", adminController.getSelectedUser);
 router.get("/working-hours", adminController.getWorkingHours);
+router.get("/team/:id", adminController.getSelectedTeam);
 router.get("/team", adminController.teamGet);
 router.get("/business", adminController.businessGet);
 router.get("/attendances", adminController.getAttendances);
