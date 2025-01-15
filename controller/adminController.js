@@ -31,8 +31,15 @@ const regPost = async(req, res)=>{
     status,
     role
   } = req.body;
+  const token = req.headers.authorization?.split(" ")[1];
 
   try {
+
+    const decodedToken = await adminAuthToken(token);
+    if(!decodedToken){
+      return res.status(404).json({error:"error authenticating user"});
+    }
+
     const user = await User.create({
       firstname,
       lastname,
@@ -64,8 +71,14 @@ const regPost = async(req, res)=>{
 };
 
 const staffGet = async(req, res)=>{
+  const token = req.headers.authorization?.split(" ")[1];
 
   try {
+    const decodedToken = await adminAuthToken(token);
+    if(!decodedToken){
+      return res.status(404).json({error:"error authenticating user"});
+    }
+
     const users = await User.find();
     res.json({users});
     
@@ -104,9 +117,14 @@ const getSelectedUser = async(req, res)=>{
 const postUser = async(req, res)=>{
   const {id} = req.params;
   const update = req.body;
-  //const token = req.headers.authorization?.split(" ")[1];
+  const token = req.headers.authorization?.split(" ")[1];
 
   try {
+    const decodedToken = await adminAuthToken(token);
+    if(!decodedToken){
+      return res.status(404).json({error:"error authenticating user"});
+    }
+
     const user = await User.findById(id);
     if(!user){
       return res.status(404).json({error: "User not found"});
@@ -133,8 +151,15 @@ const teamPost = async(req, res)=>{
     staff_code,
     team_role
   } = req.body;
-  console.log(staff_code, team_role)
+  const token = req.headers.authorization?.split(" ")[1];
+ 
   try {
+
+    const decodedToken = await adminAuthToken(token);
+    if(!decodedToken){
+      return res.status(404).json({error:"error authenticating user"});
+    }
+
     const team = await Team.create({
       staff_code,
       team_role
@@ -154,7 +179,14 @@ const teamPost = async(req, res)=>{
 }
 
 const teamGet = async(req,res)=>{
+  const token = req.headers.authorization?.split(" ")[1];
+
   try {
+    const decodedToken = await adminAuthToken(token);
+    if(!decodedToken){
+      return res.status(404).json({error:"error authenticating user"});
+    }
+
     const users = await User.find();
     const teams = await Team.find();
 
@@ -175,8 +207,15 @@ const teamGet = async(req,res)=>{
 const teamEdit = async(req, res)=>{
   const {id} = req.params;
   const {team_role} = req.body;
+  const token = req.headers.authorization?.split(" ")[1];
 
   try {
+
+    const decodedToken = await adminAuthToken(token);
+    if(!decodedToken){
+      return res.status(404).json({error:"error authenticating user"});
+    }
+
     const team = await Team.findById(id);
     if(!team){
       return res.status(404).json({error: "User not found"});
@@ -200,7 +239,6 @@ const teamEdit = async(req, res)=>{
 const teamDelete = async(req, res)=>{
   const {id} = req.params;
   const token = req.headers.authorization?.split(" ")[1];
-  console.log(token)
 
   try {
 
@@ -213,7 +251,7 @@ const teamDelete = async(req, res)=>{
     if(!team){
       return res.status(404).json({error: "Team not found"});
     };
-    console.log("team", team);
+    
 
     await Team.findByIdAndDelete(id);
     res.status(200).json({message : "team deleted successfully"})
@@ -225,7 +263,6 @@ const teamDelete = async(req, res)=>{
     
   }
 }
-
 // change to staff id instead of code
 const getSelectedTeam = async(req, res)=>{
   const token = req.headers.authorization?.split(" ")[1];
@@ -246,7 +283,6 @@ const getSelectedTeam = async(req, res)=>{
     if(!user){
       return res.status(404).json({error: "user not found"});
     };
-    console.log(team)
 
     res.status(200).json({
       firstname : user.firstname,
@@ -264,9 +300,17 @@ const getSelectedTeam = async(req, res)=>{
 
 }
 
+
+
 const saveOrUpdateBusiness = async (req, res)=>{
+  const token = req.headers.authorization?.split(" ")[1];
+  const data = req.body;
+
   try {
-    const data = req.body;
+    const decodedToken = await adminAuthToken(token);
+    if(!decodedToken){
+      return res.status(404).json({error:"error authenticating user"});
+    }
 
     let business = await Business.findOne();
 
@@ -300,7 +344,14 @@ const saveOrUpdateBusiness = async (req, res)=>{
 }
 
 const businessGet = async(req, res)=>{
+  const token = req.headers.authorization?.split(" ")[1];
+
   try {
+    const decodedToken = await adminAuthToken(token);
+    if(!decodedToken){
+      return res.status(404).json({error:"error authenticating user"});
+    }
+
     const business = await Business.find()
     res.status(200).json(
     {
@@ -316,11 +367,15 @@ const businessGet = async(req, res)=>{
 
 }
 
-
 const patchWorkingHours = async(req, res)=>{
   const {days} = req.body;
+  const token = req.headers.authorization?.split(" ")[1];
 
   try {
+    const decodedToken = await adminAuthToken(token);
+    if(!decodedToken){
+      return res.status(404).json({error:"error authenticating user"});
+    }
 
     let workingHours = await WorkingHours.findOne();
 
@@ -356,8 +411,15 @@ const patchWorkingHours = async(req, res)=>{
 }
 
 const getWorkingHours = async(req, res)=>{
+  const token = req.headers.authorization?.split(" ")[1];
 
   try {
+
+    const decodedToken = await adminAuthToken(token);
+    if(!decodedToken){
+      return res.status(404).json({error:"error authenticating user"});
+    }
+
     const workingHours = await WorkingHours.find();
     res.json({workingHours});
     
@@ -370,9 +432,18 @@ const getWorkingHours = async(req, res)=>{
 }
 
 
+
+
 const getAttendances = async(req, res)=>{
+  const token = req.headers.authorization?.split(" ")[1];
 
   try {
+      
+    const decodedToken = await adminAuthToken(token);
+    if(!decodedToken){
+      return res.status(404).json({error:"error authenticating user"});
+    }
+
     const attendances = await Attendance.find();
     res.json({attendances});
     
@@ -386,8 +457,14 @@ const getAttendances = async(req, res)=>{
 
 const getAttendance = async(req, res)=>{
   const {id} = req.params;
+  const token = req.headers.authorization?.split(" ")[1];
 
   try {
+    const decodedToken = await adminAuthToken(token);
+    if(!decodedToken){
+      return res.status(404).json({error:"error authenticating user"});
+    }
+
     const user = await User.findById(id);
     if(!user){
       return res.status(404).json({error: "users not found"});
@@ -404,9 +481,19 @@ const getAttendance = async(req, res)=>{
 }
 
 
+
+
 const getAllPayroll = async(req, res)=>{
+  const token = req.headers.authorization?.split(" ")[1];
+
  
   try {
+
+    const decodedToken = await adminAuthToken(token);
+    if(!decodedToken){
+      return res.status(404).json({error:"error authenticating user"});
+    }
+
     const contract_staff = await ContractStaff.find({staff_type : "contract"});
     const fixed_staff = await FixedStaff.find({staff_type : "fixed"});
     const users = await User.find();
@@ -427,9 +514,15 @@ const getAllPayroll = async(req, res)=>{
 
 const getSinglePayroll = async(req, res)=>{
   const {id} = req.params;
-  console.log(id)
+  const token = req.headers.authorization?.split(" ")[1];
+  
 
   try {
+    const decodedToken = await adminAuthToken(token);
+    if(!decodedToken){
+      return res.status(404).json({error:"error authenticating user"});
+    }
+
     const user = await User.findById(id);
     if(!user){
       return res.status(404).json({error : "error fetching user"});
@@ -484,15 +577,24 @@ const getSinglePayroll = async(req, res)=>{
 const postPayrollDetails = async(req, res)=>{
   const {id} = req.params;
   const formData = req.body;
+  const token = req.headers.authorization?.split(" ")[1];
 
   try {
+
+    const decodedToken = await adminAuthToken(token);
+    if(!decodedToken){
+      return res.status(404).json({error:"error authenticating user"});
+    }
+
     const currentDate = new Date();
     const currentMonthStart = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
     const currentMonthEnd = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
 
     const user = await User.findById(id);
+
     let updatedPayroll;
     if(user.employment_type === "fixed"){
+
       updatedPayroll = await FixedStaff.findOneAndUpdate(
         {staff_id : id,
           createdAt:{
@@ -504,25 +606,32 @@ const postPayrollDetails = async(req, res)=>{
         {$set: formData},  
         {new: true, upsert: true}
       );
+
+      if(!updatedPayroll){
+        return res.status(404).json({error: "Payroll not found"})
+      }
+
     }else if(user.employment_type === "contract"){
-      updatedPayroll = await ContractStaff.findOneAndUpdate(
-        {staff_id : id,
-          createdAt:{
-            $gte: currentMonthStart,
-            $lte: currentMonthEnd
-          },
-        },
-        {$set: formData},
-        {new: true, upsert: true}
-      )
+
+      const {weekId, day, rate, unit, loan, bonuses} = req.body;
+      updatedPayroll = await ContractStaff.findById(weekId);
+
+      if(!updatedPayroll){
+        return res.status(404).json({error: "Payroll not found"})
+      }
+
+      updatedPayroll.days[day]. rate = rate;
+      updatedPayroll.days[day]. unit = unit;
+      updatedPayroll.days[day]. loan = loan;
+      updatedPayroll.days[day]. bonuses = bonuses;
+
+      await updatedPayroll.save();
+
+
     }else{
       return res.status(400).json({error: "Inavalid staff type"})
     }
     
-    if(!updatedPayroll){
-      return res.status(404).json({error: "Payroll not found or couldn't be created"})
-    }
-    console.log(updatedPayroll);
     res.status(200).json({
       message: "Payroll updated succesfully",
       payroll: updatedPayroll,
