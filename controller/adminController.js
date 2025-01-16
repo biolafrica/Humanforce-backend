@@ -445,7 +445,18 @@ const getAttendances = async(req, res)=>{
     }
 
     const attendances = await Attendance.find();
-    res.json({attendances});
+    const updatedAttendance = attendances.reduce((acc, item)=>{
+      const monthYear = new Date(item.createdAt).toLocaleString('default',{month: 'long', year:'numeric'});
+
+      if(!acc[monthYear]){
+        acc[monthYear] = [];
+      }
+      acc[monthYear].push(item)
+      return acc
+
+    }, {})
+
+    res.status(200).json({updatedAttendance});
     
   } catch (error) {
     console.log("Error fetching all attendance:", error)
@@ -543,7 +554,6 @@ const getSinglePayroll = async(req, res)=>{
           acc[monthYear] = [];
         }
         acc[monthYear].push(item)
-        console.log(acc)
         return acc;
         
       }, {});
