@@ -6,7 +6,7 @@ const WorkingHours = require("../model/workingHoursModel");
 const Attendance = require("../model/attendance");
 const jwt = require("jsonwebtoken");
 const {ContractStaff, FixedStaff} = require("../model/payrollModel");
-const { adminAuthToken } = require("../Middleware/auth");
+const { adminAuthToken, authToken } = require("../Middleware/auth");
 
 
 const maxAge = 3*24*60*60;
@@ -346,11 +346,28 @@ const saveOrUpdateBusiness = async (req, res)=>{
 const businessGet = async(req, res)=>{
   const token = req.headers.authorization?.split(" ")[1];
 
+  let decodedToken = null
+
   try {
-    const decodedToken = await adminAuthToken(token);
-    if(!decodedToken){
-      return res.status(404).json({error:"error authenticating user"});
+    decodedToken = await adminAuthToken(token)
+  } catch (error) {
+    console.error('Admin token decoding failed', error)
+  }
+
+  if(!decodedToken){
+    try {
+      decodedToken = await authToken(token)
+    } catch (error) {
+      console.error('User token decoding failed', error)
     }
+  }
+
+  if(!decodedToken){
+    return res.status(403).json({error:"Authentication failed"})
+  }
+
+
+  try {
 
     const business = await Business.find()
     res.status(200).json(
@@ -413,13 +430,27 @@ const patchWorkingHours = async(req, res)=>{
 const getWorkingHours = async(req, res)=>{
   const token = req.headers.authorization?.split(" ")[1];
 
+  let decodedToken = null
+
   try {
+    decodedToken = await adminAuthToken(token)
+  } catch (error) {
+    console.error('Admin token decoding failed', error)
+  }
 
-    const decodedToken = await adminAuthToken(token);
-    if(!decodedToken){
-      return res.status(404).json({error:"error authenticating user"});
+  if(!decodedToken){
+    try {
+      decodedToken = await authToken(token)
+    } catch (error) {
+      console.error('User token decoding failed', error)
     }
+  }
 
+  if(!decodedToken){
+    return res.status(403).json({error:"Authentication failed"})
+  }
+
+  try {
     const workingHours = await WorkingHours.find();
     res.json({workingHours});
     
@@ -607,7 +638,7 @@ const getSinglePayroll = async(req, res)=>{
 
 const postPayrollDetails = async(req, res)=>{
   const {id} = req.params;
-  const formData = req.body;
+  const finalData = req.body;
   const token = req.headers.authorization?.split(" ")[1];
 
   try {
@@ -657,7 +688,6 @@ const postPayrollDetails = async(req, res)=>{
       updatedPayroll.days[day]. bonuses = bonuses;
 
       await updatedPayroll.save();
-
 
     }else{
       return res.status(400).json({error: "Inavalid staff type"})

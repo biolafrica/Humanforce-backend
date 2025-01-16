@@ -1,6 +1,4 @@
 const jwt = require("jsonwebtoken")
-const jwtSecret = process.env.jwtSecret;
-
 
 const requireAuth = (req, res, next)=>{
   const token = req.cookies.authToken;
@@ -55,7 +53,6 @@ const adminAuthToken = async(token)=>{
 
 module.exports = 
 {
-  requireAuth,
   authToken,
   adminAuthToken
 }
