@@ -468,6 +468,7 @@ const getAttendances = async(req, res)=>{
 
 const getAttendance = async(req, res)=>{
   const {id} = req.params;
+  const {monthYear} = req.query;
   const token = req.headers.authorization?.split(" ")[1];
 
   try {
@@ -481,8 +482,28 @@ const getAttendance = async(req, res)=>{
       return res.status(404).json({error: "users not found"});
     }
 
-    const attendance = await Attendance.find({staff_code: user.staff_code});
-    res.status(200).json({attendance, user});
+    if(!monthYear){
+      return res.status(404).json({error: "month and year are required"});
+    }
+
+    const [monthName, year] = monthYear.split(" ")
+    const monthIndex = new Date(`${monthName} 1, ${year}`).getMonth();
+
+    const startDate = new Date(year, monthIndex, 1)
+    const endDate = new Date(year, monthIndex + 1, 0, 23, 59, 59);
+
+    const attendance = await Attendance.find({
+      staff_id: user._id,
+      createdAt: {$gte : startDate, $lte: endDate}
+    });
+    
+    res.status(200).json({
+      attendance,
+      user: {
+        firstname : user.firstname,
+        lastname : user.lastname,
+      },
+    });
     
   } catch (error) {
     console.log("Error fetching the user attendances", error);
