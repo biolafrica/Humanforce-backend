@@ -305,7 +305,17 @@ const getAttendance = async(req, res)=>{
     }
 
     const attendance = await Attendance.find({staff_id: staff._id});
-    res.status(200).json({attendance});
+     const updatedAttendance = attendance.reduce((acc, item)=>{
+      const monthYear = new Date(item.createdAt).toLocaleString('default',{month: 'long', year:'numeric'});
+
+      if(!acc[monthYear]){
+        acc[monthYear] = [];
+      }
+      acc[monthYear].push(item)
+      return acc
+
+    }, {})
+    res.status(200).json({updatedAttendance});
     
   } catch (error) {
     console.log("Error fetching the user attendances", error);
@@ -357,7 +367,7 @@ const getUserPayslip = async(req, res)=>{
 
     }, {});
 
-    res.status(200).json({formattedPayroll})
+    res.status(200).json({formattedPayroll, staff})
     
   } catch (error) {
     console.error(" Error fetching payslip data:", error)

@@ -476,6 +476,7 @@ const getAttendances = async(req, res)=>{
     }
 
     const attendances = await Attendance.find();
+    
     const updatedAttendance = attendances.reduce((acc, item)=>{
       const monthYear = new Date(item.createdAt).toLocaleString('default',{month: 'long', year:'numeric'});
 
@@ -742,7 +743,6 @@ const login = async(req, res)=>{
   }
 
 }
-
 
 
 

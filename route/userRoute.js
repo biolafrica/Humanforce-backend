@@ -3,11 +3,14 @@ const userController = require("../controller/userController");
 
 const router = Router();
 router.post("/login", userController.login);
+
 router.post("/clock", userController.postClock);
 router.post("/clocked", userController.postClocked);
 router.patch("/clock/:id", userController.patchClock);
 router.get("/clock/:id", userController.getClock);
+
 router.get("/attendance/", userController.getAttendance);
+
 router.get("/payslip/", userController.getUserPayslip);
 
 
