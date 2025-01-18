@@ -118,6 +118,16 @@ const contractStaffSchema = new mongoose.Schema({
     default : 0,
   },
 
+  tax_percentage:{
+    type: Number,
+    default: 5,
+  },
+
+  pension_percentage:{
+    type: Number,
+    default: 10
+  },
+
   unit:{
     type :Number,
     default : 0,
@@ -191,6 +201,35 @@ const contractStaffSchema = new mongoose.Schema({
   },
 
 
+})
+
+contractStaffSchema.pre("save", function(next){
+  let totalBasicPay = 0;
+  let totalUnit = 0;
+  let totalLoan = 0;
+  let totalLatenessFine = 0;
+  let totalBonuses = 0;
+
+  for(const day in this.days){
+    if(this.days.hasOwnPeoperty()){
+      totalBasicPay += this.days[day].rate;
+      totalUnit += this.days[day].unit;
+      totalLoan += this.days[day].loan;
+      totalLatenessFine += this.days[day].lateness_fine;
+      totalBonuses += this.days[day].bonuses;
+    }
+  }
+
+  this.basic_pay = totalBasicPay;
+  this.unit = totalUnit;
+  this.loan = totalLoan;
+  this.lateness_fine = totalLatenessFine;
+  this.bonuses = totalBonuses;
+
+  this.tax = (this.tax_percentage/100) * this.basic_pay;
+  this.pension = (this.pension_percentage / 100) * this.basic_pay
+
+  next();
 })
 
 

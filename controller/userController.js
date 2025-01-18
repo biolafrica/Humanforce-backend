@@ -156,7 +156,9 @@ const postClock = async(req, res)=>{
       if(!contractPayroll){
         contractPayroll = await ContractStaff.create({
           staff_id,
-          week: currentWeek
+          week: currentWeek,
+          tax_percentage: tax,
+          pension_percentage: pension
         });
       }
 
