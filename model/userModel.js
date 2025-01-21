@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const { type } = require("os");
+const nodemailer = require("nodemailer")
 
 
 const userSchema = new mongoose.Schema({
@@ -113,5 +114,39 @@ userSchema.statics.login = async function(staff_code){
   }
 }
 
+userSchema.post("save", async function(doc){
+  const pass = process.env.emailPassword;
+  const user = process.env.email;
+
+  try {
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth:{
+        user,
+        pass,
+      }
+    });
+
+    const mailOptions ={
+      from : user,
+      to: doc.email_address,
+      subject: "Welcome to Eatup Food Services Limited",
+      text: `Hello ${doc.firstname},
+      \n\n
+      Welcome to our company! Your staff code is: ${doc.staff_code}.
+      \n\n
+      Feel free to reach out to support on info@eatupng.com if you have an question
+      \n\n
+      Best regards,\n
+      Head of HR`,
+    };
+
+    await transporter.sendMail(mailOptions);
+    console.log(`Email sent successfully to ${doc.email_address}`)
+    
+  } catch (error) {
+    console.error("Error sending email:", error) 
+  }
+})
 
 module.exports = mongoose.model("User", userSchema);

@@ -65,7 +65,8 @@ const login = async(req, res)=>{
 
 // click on start button
 const postClock = async(req, res)=>{
-  const {token} = req.body;
+  const token = req.headers.authorization?.split(" ")[1];
+  
   
   try {
     const decodedToken = await authToken(token);
@@ -188,9 +189,13 @@ const postClock = async(req, res)=>{
 // click on end button
 const postClocked = async(req, res)=>{
   const {token} = req.body;
+  
 
   try {
     const decodedToken = await authToken(token);
+    if(!decodedToken){
+      return res.status(404).json({error:"Error Verifying user"});
+    }
 
     const staff = await User.findOne({_id:decodedToken.id});
     if(!staff){
@@ -222,9 +227,16 @@ const postClocked = async(req, res)=>{
 
 // to get specific attendance
 const getClock = async(req, res)=>{
+  const token = req.headers.authorization?.split(" ")[1];
+  
   const {id} = req.params;
-  console.log(id);
   try {
+
+    const decodedToken = await authToken(token);
+    if(!decodedToken){
+      return res.status(404).json({error:"Error Verifying user"});
+    }
+
     const attendance = await Attendance.findById(id);
     res.status(200).json({data: attendance})
     
@@ -238,10 +250,17 @@ const getClock = async(req, res)=>{
 
 // to update specific attendance schema
 const patchClock = async(req, res)=>{
+  const token = req.headers.authorization?.split(" ")[1];
   const {id} = req.params;
   const updates = req.body;
 
   try {
+
+    const decodedToken = await authToken(token);
+    if(!decodedToken){
+      return res.status(404).json({error:"Error Verifying user"});
+    }
+
     const updatedDocument = await Attendance.findByIdAndUpdate(
       id,
       {$set: updates},
