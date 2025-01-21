@@ -69,6 +69,9 @@ const postClock = async(req, res)=>{
   
   try {
     const user = await authToken(token);
+    if(!user){
+      return res.status(404).json({error:"Error Verifying user"});
+    }
     
     const staff = await User.findOne({_id:user.id});
 
@@ -80,8 +83,6 @@ const postClock = async(req, res)=>{
     const staffStatus = staff.employment_type;
     const fixedBasicPay = staff.salary;
    
-
-
     const now = new Date();
     const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
     const currentMonthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
@@ -144,9 +145,15 @@ const postClock = async(req, res)=>{
           basic_pay : fixedBasicPay,
           tax : tax >= 0 ? (tax/100) * fixedBasicPay : 0,
           pension : pension >= 0 ? (pension/100) * fixedBasicPay : 0,
-
+          lateness_fine :latenessFine
         });
       }
+
+      //check if it kepps updating on all clicks
+      fixedPayroll.lateness_fine += latenessFine;
+      await fixedPayroll.save()
+
+
     } else if(staffStatus === "contract"){
       let contractPayroll = await ContractStaff.findOne({
         staff_id,

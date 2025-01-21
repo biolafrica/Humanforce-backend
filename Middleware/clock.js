@@ -41,6 +41,7 @@ const autoClockOutJob = async()=>{
       clock_out : 0,
       createdAt: {$gte: startOfDay, $lte:endOfDay},
     })
+
     console.log("attendances", attendances)
     if(attendances.length === 0){
       console.log("No pending clock-outs for today.");
@@ -51,7 +52,6 @@ const autoClockOutJob = async()=>{
       const clockOutTime = new Date()
       const [closeHours, closeMinutes] = closeTime.split(":").map(Number);
       clockOutTime.setHours(closeHours, closeMinutes, 0, 0);
-      console.log("clock-out-time",clockOutTime)
 
       attendance.clock_out = clockOutTime;
       return attendance.save();

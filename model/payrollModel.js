@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 
 const fixedStaffSchema = new mongoose.Schema({
+
   staff_id:{
     type :String,
     default : "",
@@ -211,7 +212,7 @@ contractStaffSchema.pre("save", function(next){
   let totalBonuses = 0;
 
   for(const day in this.days){
-    if(this.days.hasOwnPeoperty()){
+    if(this.days.hasOwnPeoperty(day)){
       totalBasicPay += this.days[day].rate;
       totalUnit += this.days[day].unit;
       totalLoan += this.days[day].loan;
@@ -228,6 +229,14 @@ contractStaffSchema.pre("save", function(next){
 
   this.tax = (this.tax_percentage/100) * this.basic_pay;
   this.pension = (this.pension_percentage / 100) * this.basic_pay
+
+  next();
+})
+
+fixedStaffSchema.pre("save", function(next){
+  let totalDeductions = this.loan + this.lateness_fine + this.pension + this.tax + this.deductions;
+  let totalIncome = this.basic_pay +this.bonuses;
+  this.net_pay = totalIncome - totalDeductions;
 
   next();
 })
