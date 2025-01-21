@@ -212,7 +212,7 @@ contractStaffSchema.pre("save", function(next){
   let totalBonuses = 0;
 
   for(const day in this.days){
-    if(this.days.hasOwnPeoperty(day)){
+    if((this.days).hasOwnProperty(day)){
       totalBasicPay += this.days[day].rate;
       totalUnit += this.days[day].unit;
       totalLoan += this.days[day].loan;

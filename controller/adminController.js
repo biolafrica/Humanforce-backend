@@ -4,6 +4,7 @@ const Team = require("../model/teamModel");
 const Business = require("../model/businessModel");
 const WorkingHours = require("../model/workingHoursModel");
 const Attendance = require("../model/attendance");
+const TokenBlacklist = require("../model/tokenBlacklist");
 const jwt = require("jsonwebtoken");
 const {ContractStaff, FixedStaff} = require("../model/payrollModel");
 const { adminAuthToken, authToken } = require("../Middleware/auth");
@@ -37,7 +38,7 @@ const regPost = async(req, res)=>{
 
     const decodedToken = await adminAuthToken(token);
     if(!decodedToken){
-      return res.status(404).json({error:"error authenticating user"});
+      return res.status(401).json({error:"error authenticating user"});
     }
 
     const user = await User.create({
@@ -76,7 +77,7 @@ const staffGet = async(req, res)=>{
   try {
     const decodedToken = await adminAuthToken(token);
     if(!decodedToken){
-      return res.status(404).json({error:"error authenticating user"});
+      return res.status(401).json({error:"error authenticating user"});
     }
 
     const users = await User.find();
@@ -97,7 +98,7 @@ const getSelectedUser = async(req, res)=>{
   try {
     const decodedToken = await adminAuthToken(token);
     if(!decodedToken){
-      return res.status(404).json({error:"error authenticating user"});
+      return res.status(401).json({error:"error authenticating user"});
     }
 
     const staff = await User.findOne({_id:id});
@@ -122,7 +123,7 @@ const postUser = async(req, res)=>{
   try {
     const decodedToken = await adminAuthToken(token);
     if(!decodedToken){
-      return res.status(404).json({error:"error authenticating user"});
+      return res.status(401).json({error:"error authenticating user"});
     }
 
     const user = await User.findById(id);
@@ -157,7 +158,7 @@ const teamPost = async(req, res)=>{
 
     const decodedToken = await adminAuthToken(token);
     if(!decodedToken){
-      return res.status(404).json({error:"error authenticating user"});
+      return res.status(401).json({error:"error authenticating user"});
     }
 
     const team = await Team.create({
@@ -184,7 +185,7 @@ const teamGet = async(req,res)=>{
   try {
     const decodedToken = await adminAuthToken(token);
     if(!decodedToken){
-      return res.status(404).json({error:"error authenticating user"});
+      return res.status(401).json({error:"error authenticating user"});
     }
 
     const users = await User.find();
@@ -213,7 +214,7 @@ const teamEdit = async(req, res)=>{
 
     const decodedToken = await adminAuthToken(token);
     if(!decodedToken){
-      return res.status(404).json({error:"error authenticating user"});
+      return res.status(401).json({error:"error authenticating user"});
     }
 
     const team = await Team.findById(id);
@@ -244,13 +245,18 @@ const teamDelete = async(req, res)=>{
 
     const decodedToken = await adminAuthToken(token);
     if(!decodedToken){
-      return res.status(404).json({error:"error authenticating user"});
+      return res.status(401).json({error:"error authenticating user"});
     }
      
     const team = await Team.findById(id);
     if(!team){
       return res.status(404).json({error: "Team not found"});
     };
+
+    await TokenBlacklist.create({
+      token,
+      expiresAt: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000)
+    });
     
 
     await Team.findByIdAndDelete(id);
@@ -271,7 +277,7 @@ const getSelectedTeam = async(req, res)=>{
   try {
     const decodedToken = await adminAuthToken(token);
     if(!decodedToken){
-      return res.status(404).json({error:"error authenticating user"});
+      return res.status(401).json({error:"error authenticating user"});
     }
         
     const team = await Team.findById(id);
@@ -301,7 +307,6 @@ const getSelectedTeam = async(req, res)=>{
 }
 
 
-
 const saveOrUpdateBusiness = async (req, res)=>{
   const token = req.headers.authorization?.split(" ")[1];
   const data = req.body;
@@ -309,7 +314,7 @@ const saveOrUpdateBusiness = async (req, res)=>{
   try {
     const decodedToken = await adminAuthToken(token);
     if(!decodedToken){
-      return res.status(404).json({error:"error authenticating user"});
+      return res.status(401).json({error:"error authenticating user"});
     }
 
     let business = await Business.findOne();
@@ -363,7 +368,7 @@ const businessGet = async(req, res)=>{
   }
 
   if(!decodedToken){
-    return res.status(403).json({error:"Authentication failed"})
+    return res.status(401).json({error:"Authentication failed"})
   }
 
 
@@ -391,7 +396,7 @@ const patchWorkingHours = async(req, res)=>{
   try {
     const decodedToken = await adminAuthToken(token);
     if(!decodedToken){
-      return res.status(404).json({error:"error authenticating user"});
+      return res.status(401).json({error:"error authenticating user"});
     }
 
     let workingHours = await WorkingHours.findOne();
@@ -447,7 +452,7 @@ const getWorkingHours = async(req, res)=>{
   }
 
   if(!decodedToken){
-    return res.status(403).json({error:"Authentication failed"})
+    return res.status(401).json({error:"Authentication failed"})
   }
 
   try {
@@ -472,7 +477,7 @@ const getAttendances = async(req, res)=>{
       
     const decodedToken = await adminAuthToken(token);
     if(!decodedToken){
-      return res.status(404).json({error:"error authenticating user"});
+      return res.status(401).json({error:"error authenticating user"});
     }
 
     const attendances = await Attendance.find();
@@ -506,7 +511,7 @@ const getAttendance = async(req, res)=>{
   try {
     const decodedToken = await adminAuthToken(token);
     if(!decodedToken){
-      return res.status(404).json({error:"error authenticating user"});
+      return res.status(401).json({error:"error authenticating user"});
     }
 
     const user = await User.findById(id);
@@ -555,7 +560,7 @@ const getAllPayroll = async(req, res)=>{
 
     const decodedToken = await adminAuthToken(token);
     if(!decodedToken){
-      return res.status(404).json({error:"error authenticating user"});
+      return res.status(401).json({error:"error authenticating user"});
     }
 
     const contract_staff = await ContractStaff.find({staff_type : "contract"});
@@ -584,7 +589,7 @@ const getSinglePayroll = async(req, res)=>{
   try {
     const decodedToken = await adminAuthToken(token);
     if(!decodedToken){
-      return res.status(404).json({error:"error authenticating user"});
+      return res.status(401).json({error:"error authenticating user"});
     }
 
     const user = await User.findById(id);
@@ -646,7 +651,7 @@ const postPayrollDetails = async(req, res)=>{
 
     const decodedToken = await adminAuthToken(token);
     if(!decodedToken){
-      return res.status(404).json({error:"error authenticating user"});
+      return res.status(401).json({error:"error authenticating user"});
     }
 
     const currentDate = new Date();

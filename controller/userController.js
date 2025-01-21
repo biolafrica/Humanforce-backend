@@ -57,7 +57,7 @@ const login = async(req, res)=>{
     
   } catch (error) {
     console.log("Error logging in;", error);
-    res.status(400).json({error: error.message});
+    res.status(500).json({error: error.message});
     
   }
 
@@ -68,12 +68,12 @@ const postClock = async(req, res)=>{
   const {token} = req.body;
   
   try {
-    const user = await authToken(token);
-    if(!user){
+    const decodedToken = await authToken(token);
+    if(!decodedToken){
       return res.status(404).json({error:"Error Verifying user"});
     }
     
-    const staff = await User.findOne({_id:user.id});
+    const staff = await User.findOne({_id:decodedToken.id});
 
     if(!staff){
       return res.status(404).json({error:"Staff not found"});
