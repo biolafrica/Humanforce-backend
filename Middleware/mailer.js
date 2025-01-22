@@ -1,32 +1,31 @@
 const nodemailer = require("nodemailer");
 
 //transporter
-const email = process.env.EMAIL;
-const password = process.env.PASSWORD;
-console.log(email, password)
+const pass = process.env.emailPassword;
+const user = process.env.email;
+
 const transporter = nodemailer.createTransport({
-  //host: "smtp.zoho.com",
-  //port: 587,
-  //secure: false,
   service: "gmail",
   auth:{
-    user: email,
-    pass: password,
+    user,
+    pass,
   },
 });
 
-const sendRegistrationEmail = async(to, name, staff_code) => {
+const sendRegistrationEmail = async(to, name,) => {
   try {
     const mailOptions = {
       from:"'Eatup Food Services Limited' biolafrica@gmail.com",
       to,
-      subject : "Registration Succesfull",
-      html: `
-      <h1>Wlecome to Eatup Food Services limited ${name}</h1>
-      <p>We are happy to have you join our team, Your staff code is ${staff_code}</p>
-      <p>Feel free to reach out to support on info@eatupng.com if you have an question</p>
-      <p>Best Regards, <b>Eatup Food Limited</b> </p>
-      `,
+      subject : "Team Member access",
+      text: `Hello ${name},
+      \n\n
+      You have been given access to the staff management dashboard, Login with your staff Code to get started.
+      \n\n
+      Feel free to reach out to support on info@eatupng.com if you have an question
+      \n\n
+      Best regards,\n
+      Head of HR`,
     };
 
     await transporter.sendMail(mailOptions);

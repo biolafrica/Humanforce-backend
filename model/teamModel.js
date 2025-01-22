@@ -1,8 +1,9 @@
 const mongoose = require("mongoose");
 const { type } = require("os");
+const nodemailer = require("nodemailer");
 
 const teamSchema = new mongoose.Schema({
-  staff_code:{
+  staff_id:{
     type : String,
     unique : [true, "he has been added to the team"],
     required : true
@@ -19,6 +20,7 @@ const teamSchema = new mongoose.Schema({
   }
 
 })
+
 
 
 module.exports = mongoose.model("Team", teamSchema);

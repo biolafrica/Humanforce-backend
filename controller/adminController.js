@@ -149,10 +149,11 @@ const postUser = async(req, res)=>{
 
 const teamPost = async(req, res)=>{
   const{
-    staff_code,
+    staff_id,
     team_role
   } = req.body;
   const token = req.headers.authorization?.split(" ")[1];
+  
  
   try {
 
@@ -162,9 +163,17 @@ const teamPost = async(req, res)=>{
     }
 
     const team = await Team.create({
-      staff_code,
+      staff_id,
       team_role
     });
+
+    const user = await User.findById(staff_id);
+
+    if(!user){
+      console.log("user not found")
+    }else{
+      sendRegistrationEmail(user.email_address, user.firstname)
+    }
 
     res.status(201).json({id:team._id})
     
@@ -587,6 +596,7 @@ const getSinglePayroll = async(req, res)=>{
   
 
   try {
+
     const decodedToken = await adminAuthToken(token);
     if(!decodedToken){
       return res.status(401).json({error:"error authenticating user"});
@@ -718,7 +728,7 @@ const login = async(req, res)=>{
 
   try {
     const user = await User.login(staff_code);
-    const team = await Team.findOne({staff_code : user.staff_code});
+    const team = await Team.findOne({staff_id : user._id});
 
     if(!team){
       return  res.status(400).json({error: "invalid Team member"})
