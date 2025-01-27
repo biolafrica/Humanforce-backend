@@ -65,13 +65,13 @@ const login = async(req, res)=>{
 
 // click on start button
 const postClock = async(req, res)=>{
-  const token = req.headers.authorization?.split(" ")[1];
+  const {token} = req.body;
   
   
   try {
     const decodedToken = await authToken(token);
     if(!decodedToken){
-      return res.status(404).json({error:"Error Verifying user"});
+      return res.status(403).json({error:"Error Verifying user"});
     }
     
     const staff = await User.findOne({_id:decodedToken.id});
@@ -194,7 +194,7 @@ const postClocked = async(req, res)=>{
   try {
     const decodedToken = await authToken(token);
     if(!decodedToken){
-      return res.status(404).json({error:"Error Verifying user"});
+      return res.status(403).json({error:"Error Verifying user"});
     }
 
     const staff = await User.findOne({_id:decodedToken.id});
@@ -228,17 +228,16 @@ const postClocked = async(req, res)=>{
 // to get specific attendance
 const getClock = async(req, res)=>{
   const token = req.headers.authorization?.split(" ")[1];
-  
   const {id} = req.params;
   try {
 
     const decodedToken = await authToken(token);
     if(!decodedToken){
-      return res.status(404).json({error:"Error Verifying user"});
+      return res.status(403).json({error:"Error Verifying user"});
     }
 
     const attendance = await Attendance.findById(id);
-    res.status(200).json({data: attendance})
+    res.status(200).json({attendance})
     
   } catch (error) {
     console.log("Error fetching attendance", error)
@@ -258,7 +257,7 @@ const patchClock = async(req, res)=>{
 
     const decodedToken = await authToken(token);
     if(!decodedToken){
-      return res.status(404).json({error:"Error Verifying user"});
+      return res.status(403).json({error:"Error Verifying user"});
     }
 
     const updatedDocument = await Attendance.findByIdAndUpdate(
@@ -316,7 +315,6 @@ const patchClock = async(req, res)=>{
 
 }
 
-
 const getAttendance = async(req, res)=>{
   const token = req.headers.authorization?.split(" ")[1];
 
@@ -324,7 +322,7 @@ const getAttendance = async(req, res)=>{
 
     const decodedToken = await authToken(token);
     if(!decodedToken){
-      return res.status(404).json({error:"error authenticating user"});
+      return res.status(403).json({error:"error authenticating user"});
     }
 
     const staff = await User.findOne({_id:decodedToken.id});
@@ -359,7 +357,7 @@ const getUserPayslip = async(req, res)=>{
 
     const decodedToken = await authToken(token);
     if(!decodedToken){
-      return res.status(404).json({error:"error authenticating user"});
+      return res.status(403).json({error:"error authenticating user"});
     }
 
     const staff = await User.findOne({_id:decodedToken.id});
@@ -404,6 +402,53 @@ const getUserPayslip = async(req, res)=>{
 
 }
 
+const fetchBusiness = async(req, res)=>{
+  const token = req.headers.authorization?.split(" ")[1];
+
+  try {
+
+    const decodedToken = await authToken(token);
+    if(!decodedToken){
+      return res.status(403).json({error:"error authenticating user"});
+    }
+
+    const business = await Business.find()
+    res.status(200).json(
+    {
+      message:"Business details fetched successfully",
+      business
+    });
+    
+  } catch (error) {
+    console.log("Error fetching business:", error);
+    res.status(500).json({error : "Error fetching business details"})
+    
+  }
+
+
+}
+
+
+const fetchWorkingHours =async(req,res)=>{
+  const token = req.headers.authorization?.split(" ")[1];
+
+  try {
+
+    const decodedToken = await authToken(token);
+    if(!decodedToken){
+      return res.status(403).json({error:"error authenticating user"});
+    }
+
+    const workingHours = await WorkingHours.find();
+    res.json({workingHours});
+    
+  } catch (error) {
+    console.log("Error fetching working hours:", error)
+    res.status(500).json({error : "Failed to fetching working hours"})
+    
+  }
+
+}
 
 module.exports = {
   login,
@@ -412,6 +457,8 @@ module.exports = {
   patchClock,
   postClocked,
   getAttendance,
-  getUserPayslip
+  getUserPayslip,
+  fetchBusiness,
+  fetchWorkingHours
  
 }

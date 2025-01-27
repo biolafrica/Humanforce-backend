@@ -11,6 +11,10 @@ router.get("/clock/:id", userController.getClock);
 
 router.get("/attendance/", userController.getAttendance);
 
+router.get("/business", userController.fetchBusiness);
+
+router.get("/working-hours", userController.fetchWorkingHours);
+
 router.get("/payslip/", userController.getUserPayslip);
 
 

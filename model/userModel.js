@@ -128,13 +128,13 @@ userSchema.post("save", async function(doc){
     });
 
     const mailOptions ={
-      from : user,
+      from : "'Eatup Food Services Limited' biolafrica@gmail.com",
       to: doc.email_address,
       subject: "Welcome to Eatup Food Services Limited",
       text: `Hello ${doc.firstname},
       \n\n
       Welcome to our company! Your staff code is: ${doc.staff_code}.
-      \n\n
+      \n
       Feel free to reach out to support on info@eatupng.com if you have an question
       \n\n
       Best regards,\n
