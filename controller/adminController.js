@@ -531,7 +531,6 @@ const getAttendance = async(req, res)=>{
 const getAllPayroll = async(req, res)=>{
   const token = req.headers.authorization?.split(" ")[1];
 
- 
   try {
 
     const decodedToken = await adminAuthToken(token);
@@ -539,15 +538,13 @@ const getAllPayroll = async(req, res)=>{
       return res.status(401).json({error:"error authenticating user"});
     }
 
-    const contract_staff = await ContractStaff.find({staff_type : "contract"});
-    const fixed_staff = await FixedStaff.find({staff_type : "fixed"});
-    const users = await User.find();
+    const users = await User.find({status : "active"})
 
-    if(!contract_staff || !users || !fixed_staff){
+    if(!users){
       return res.status(404).json({error : "error fetching all payroll"});
     }
 
-    res.json({fixed_staff,contract_staff, users});
+    res.json({users});
 
   } catch (error) {
     console.log("Error fetching all payroll:", error)
