@@ -3,8 +3,8 @@ const WorkingHours = require("../model/workingHoursModel")
 const Business = require("../model/businessModel")
 const {ContractStaff, FixedStaff} = require("../model/payrollModel");
 const User = require("../model/userModel");
-const moment = require("momemt");
-const {autoSendPayrollEmail} = require("./mailer")
+const moment = require("moment");
+const {sendPayrollEmail} = require("../Middleware/mailer")
 
 const day = () =>{
   const startOfDay = new Date()
@@ -78,7 +78,6 @@ const autoSendPayrollEmail = async()=>{
   const businessSettings = await Business.findOne();
   if(!businessSettings) return;
 
-
   const {salary_date, wages_day} = businessSettings;
 
   if(currentDate === salary_date){
@@ -97,11 +96,12 @@ const autoSendPayrollEmail = async()=>{
       });
 
       if(payroll){
-        await autoSendPayrollEmail(staff, payroll);
+        await sendPayrollEmail(staff, payroll);
       }
 
     }
   }
+
 
   if(today === wages_day){
     const contractStaff = await User.find({employment_type: "contract"})
@@ -114,13 +114,10 @@ const autoSendPayrollEmail = async()=>{
         week: currentWeek
       })
       if(payroll){
-        await autoSendPayrollEmail(staff,payroll)
+        await sendPayrollEmail(staff,payroll)
       }
     }
   }
-
-
-
 
 }
 

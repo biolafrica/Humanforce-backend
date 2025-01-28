@@ -1,6 +1,8 @@
 const { text } = require("body-parser");
 const nodemailer = require("nodemailer");
 const { from } = require("pdfkit");
+const generatePayslipPDF = require("../utils/generatePayslip");
+const fs = require("fs");
 
 //transporter
 const pass = process.env.emailPassword;
@@ -39,8 +41,17 @@ const sendRegistrationEmail = async(to, name,) => {
   }
 };
 
-const sendPayrollEmail = async(staff, pdfPath)=>{
+const sendPayrollEmail = async(staff, payroll)=>{
   try {
+
+    const pdfPath = await generatePayslipPDF(staff,payroll)
+    if(!pdfPath){
+      console.error("Failed to generate PDF for", staff.satff_code);
+      return;
+    }
+
+    const pdfBuffer = fs.readFileSync(pdfPath)
+
     const mailOptions ={
       from:"'Eatup Food Services Limited' biolafrica@gmail.com",
       to: staff.email_address,
@@ -56,7 +67,13 @@ const sendPayrollEmail = async(staff, pdfPath)=>{
         \n
         Eatup Human Resources Team
       `,
-      attachments:[{filename:"Payroll.pdf", pdfPath}]
+      attachments:[
+        {
+          filename:`payslip_${staff.staff_code}.pdf`,
+          content: pdfBuffer,
+          encoding: "base64"
+        },
+      ]
     }
 
     await transporter.sendMail(mailOptions);
@@ -64,7 +81,7 @@ const sendPayrollEmail = async(staff, pdfPath)=>{
     
     
   } catch (error) {
-    console.log("Error sending payrll email:", error)
+    console.log("Error sending payroll email:", error)
     
   }
 
