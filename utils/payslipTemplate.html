@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payslip</title>
+    <style>
+
+      body{font-family: Arial, sans-serif; margin: 20px;}
+      .header, .footer{text-align: center;}
+      .content {border: 1px solid #ccc; padding: 15px;}
+      .row{display: flex; justify-content: space-between; margin-bottom: 10px;}
+
+    </style>
+  </head>
+  <body>
+
+    <div class="header">
+      <h2>Eatup Food Services Limited</h2>
+      <p>Payslip for <span id="pay_date"></span></p>
+    </div>
+
+    <div class="content">
+
+      <div class="row">
+        <strong>Employee Name:</strong><span id="staff_name"></span>
+      </div>
+
+      <div class="row">
+        <strong>Staff Code:</strong><span id="staff_code"></span>
+      </div>
+
+      <div class="row">
+        <strong>Role:</strong><span id="staff_role"></span>
+      </div>
+
+
+      <hr>
+
+
+      <div class="row">
+        <strong>Basic Pay:</strong><span id="basic_pay"></span>
+      </div>
+
+      <div class="row">
+        <strong>Bonuses:</strong><span id="bonuses"></span>
+      </div>
+
+      <div class="row">
+        <strong>Total Deductions:</strong><span id="total_deductions"></span>
+      </div>
+
+      <div class="row">
+        <strong>Net Pay:</strong><span id="net_pay"></span>
+      </div>
+
+    </div>
+    
+    <div class="footer">
+      <p>Thank you for your hard work!</p>
+    </div>
+    
+  </body>
+</html>

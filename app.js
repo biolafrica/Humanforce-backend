@@ -8,7 +8,8 @@ const cors = require("cors");
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const cron = require("node-cron");
-const {autoClockOutJob} = require("./Middleware/clock");
+const {autoClockOutJob, autoSendPayrollEmail} = require("./Middleware/automation");
+
 
 
 //setup express app
@@ -45,6 +46,10 @@ app.listen(PORT, ()=>{
 //schedule clock out by 10pm
 cron.schedule("0 22 * * *", ()=>{
   autoClockOutJob();
+})
+
+cron.schedule("0 0 * * *", ()=>{
+  autoSendPayrollEmail();
 })
 
 //Route management

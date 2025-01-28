@@ -1,4 +1,6 @@
+const { text } = require("body-parser");
 const nodemailer = require("nodemailer");
+const { from } = require("pdfkit");
 
 //transporter
 const pass = process.env.emailPassword;
@@ -37,4 +39,39 @@ const sendRegistrationEmail = async(to, name,) => {
   }
 };
 
-module.exports = sendRegistrationEmail;
+const sendPayrollEmail = async(staff, pdfPath)=>{
+  try {
+    const mailOptions ={
+      from:"'Eatup Food Services Limited' biolafrica@gmail.com",
+      to: staff.email_address,
+      subject: "Your Summarized Payslip Report",
+      text: `
+        Hello ${staff.firstname},
+        \n\n
+        Please find your payslip summary attached, Kindly visit www.eatup.com for your extensive payslip report.
+        \n
+        If you encounter any issues opening your payslip, then please feel free to contact one of the team via email, hr@eatup.ng or call Boluwatife on +2348185191968
+        \n\n
+        Best,
+        \n
+        Eatup Human Resources Team
+      `,
+      attachments:[{filename:"Payroll.pdf", pdfPath}]
+    }
+
+    await transporter.sendMail(mailOptions);
+    console.log(`Payroll email sent to ${staff.email_address}`);
+    
+    
+  } catch (error) {
+    console.log("Error sending payrll email:", error)
+    
+  }
+
+
+}
+
+module.exports = {
+  sendRegistrationEmail, 
+  sendPayrollEmail 
+}

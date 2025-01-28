@@ -1,5 +1,5 @@
 const User = require("../model/userModel");
-const sendRegistrationEmail = require("../Middleware/mailer");
+const {sendRegistrationEmail} = require("../Middleware/mailer");
 const Team = require("../model/teamModel");
 const Business = require("../model/businessModel");
 const WorkingHours = require("../model/workingHoursModel");

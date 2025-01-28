@@ -1,6 +1,10 @@
 const Attendance = require("../model/attendance")
 const WorkingHours = require("../model/workingHoursModel")
 const Business = require("../model/businessModel")
+const {ContractStaff, FixedStaff} = require("../model/payrollModel");
+const User = require("../model/userModel");
+const moment = require("momemt");
+const {autoSendPayrollEmail} = require("./mailer")
 
 const day = () =>{
   const startOfDay = new Date()
@@ -67,5 +71,58 @@ const autoClockOutJob = async()=>{
 
 }
 
+const autoSendPayrollEmail = async()=>{
+  const today = moment().format("dddd");
+  const currentDate = moment().date();
 
-module.exports = {autoClockOutJob}
+  const businessSettings = await Business.findOne();
+  if(!businessSettings) return;
+
+
+  const {salary_date, wages_day} = businessSettings;
+
+  if(currentDate === salary_date){
+    const fixedStaff = await User.find({employment_type : "fixed"});
+
+    const currentMonthStart = moment().startOf("month").toDate();
+    const currentMonthEnd = moment().endOf("month").toDate();
+
+    for(const staff of fixedStaff){
+      const payroll = await FixedStaff.findOne({
+        staff_id:staff._id,
+        createdAt:{
+          $gte: currentMonthStart,
+          $lte: currentMonthEnd
+        }
+      });
+
+      if(payroll){
+        await autoSendPayrollEmail(staff, payroll);
+      }
+
+    }
+  }
+
+  if(today === wages_day){
+    const contractStaff = await User.find({employment_type: "contract"})
+
+    const currentWeek = moment().format("YYYY-[W]W");
+
+    for(const staff of contractStaff){
+      const payroll = await ContractStaff.findOne({
+        staff_id: staff._id,
+        week: currentWeek
+      })
+      if(payroll){
+        await autoSendPayrollEmail(staff,payroll)
+      }
+    }
+  }
+
+
+
+
+}
+
+
+module.exports = {autoClockOutJob, autoSendPayrollEmail}
