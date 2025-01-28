@@ -59,12 +59,23 @@ const regPost = async(req, res)=>{
     res.status(201).json({id:user._id});
     
   } catch (error) {
-    console.log("Error creating user:", error);
+    console.log("Error creating user:", error.message);
 
-    res.status(500).json({
-      message:"An error occured while creating user",
-      error: error.message,
-    });
+    if(error.message.includes("E11000 duplicate key error collection")){
+      res.status(402).json({
+        message:"The user already exist",
+        error: error.message,
+      });
+
+    }else{
+      res.status(500).json({
+        message:"An error occured while creating user",
+        error: error.message,
+      });
+
+    }
+
+   
     
   }
 
@@ -179,11 +190,21 @@ const teamPost = async(req, res)=>{
     res.status(201).json({id:team._id})
     
   } catch (error) {
-    console.log("Error registering team member:", error);
-    res.status(500).json({
-      message: "An error occured while registering team member",
-      error: error.message
-    });
+    console.log("Error registering team member:", error.message);
+
+    if(error.message === "he has been added to the team" ){
+      res.status(402).json({
+        message:"The team member already exist",
+        error: error.message,
+      });
+
+    }else{
+      res.status(500).json({
+        message:"An error occured while registering team member",
+        error: error.message,
+      });
+
+    }
     
   }
 
