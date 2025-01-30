@@ -269,37 +269,6 @@ const patchClock = async(req, res)=>{
     if(!updatedDocument){
       return res.status(404).json({message: "Document not found"})
     }
-
-    const businessPolicy = await Business.findOne();
-    const breakHour = businessPolicy && businessPolicy.break_hours ? businessPolicy.break_hours : 0.5 ;
-
-    if(req.body.clock_out) {
-      const[clock_out,clock_in,break_start,break_end] = [
-        new Date(req.body.clock_out),
-        new Date(updatedDocument.clock_in),
-        new Date(updatedDocument.break_start),
-        new Date(updatedDocument.break_start)
-      ]
-
-      const totalTimeInHours = (clock_out - clock_in) / (1000 * 60 * 60);
-      let breakTimeInHours = (break_end - break_start) / (1000 * 60 * 60)
-      console.log("breaktime hours", breakTimeInHours);
-
-      if (breakTimeInHours <= 0 || breakTimeInHours < breakHour){
-        return breakTimeInHours = breakHour;
-      }
-
-      const hoursCompleted = totalTimeInHours - breakTimeInHours;
-      console.log("completed hours", hoursCompleted);
-      
-      updatedDocument.clock_out = clock_out;
-      const roundedCompletedHours = Math.max(0, Math.round((hoursCompleted) * 10) / 10);
-      console.log("rounded completed hours", roundedCompletedHours);
-      updatedDocument.hours = roundedCompletedHours;
-
-
-    }
-    await updatedDocument.save();
     
     res.status(200).json({
       message: "Document updated successfully",
@@ -314,6 +283,7 @@ const patchClock = async(req, res)=>{
   }
 
 }
+
 
 const getAttendance = async(req, res)=>{
   const token = req.headers.authorization?.split(" ")[1];
