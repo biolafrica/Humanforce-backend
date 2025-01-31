@@ -1,6 +1,7 @@
 const puppeteer = require ("puppeteer");
 const fs = require("fs");
 const path = require("path")
+const formatNaira = require("./formatNaira");
 
 const generatePayslipPDF = async(staff, payroll)=>{
 
@@ -12,10 +13,10 @@ const generatePayslipPDF = async(staff, payroll)=>{
     htmlContent = htmlContent.replace("{{staff_name}}", `${staff.firstname} ${staff.lastname}`);
     htmlContent = htmlContent.replace("{{staff_code}}", staff.staff_code );
     htmlContent = htmlContent.replace("{{staff_role}}", staff.role);
-    htmlContent = htmlContent.replace("{{basic_pay}}", `N${payroll.basic_pay}`);
-    htmlContent = htmlContent.replace("{{bonuses}}", `N${payroll.bonuses}`);
-    htmlContent = htmlContent.replace("{{total_deductions}}", `N${payroll.tax + payroll.loan + payroll.lateness_fine}`);
-    htmlContent = htmlContent.replace("{{net_pay}}", `N${(payroll.basic_pay + payroll.bonuses) - (payroll.tax + payroll.loan + payroll.lateness_fine)}`);
+    htmlContent = htmlContent.replace("{{basic_pay}}", `N${formatNaira(payroll.basic_pay)}`);
+    htmlContent = htmlContent.replace("{{bonuses}}", `N${formatNaira(payroll.bonuses)}`);
+    htmlContent = htmlContent.replace("{{total_deductions}}", `N${formatNaira(payroll.tax + payroll.loan + payroll.lateness_fine)}`);
+    htmlContent = htmlContent.replace("{{net_pay}}", `N${formatNaira((payroll.basic_pay + payroll.bonuses) - (payroll.tax + payroll.loan + payroll.lateness_fine))}`);
 
     const browser = await puppeteer.launch({args:["--no-sandbox", "--disable-setuid-sandbox"] });
     const page = await browser.newPage();
