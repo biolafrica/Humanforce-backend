@@ -89,8 +89,6 @@ const postClock = async(req, res)=>{
     const currentMonthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
     const currentWeek = getCurrentWeek(now);
     const currentDay = now.toLocaleString("en-US", {weekday: 'long'}).toLowerCase();
-    const createdAt = new Date(now);
-   
     
     const startOfDay = day().startOfDay;
     const endOfDay = day().endOfDay;
@@ -102,33 +100,33 @@ const postClock = async(req, res)=>{
       }
     });
 
-    if(!attendance){
-      attendance = await Attendance.create({staff_id})
-    }
-
     const workingHours = await WorkingHours.findOne();
     const businessPolicy = await Business.findOne();
-    const latenessHour = businessPolicy && businessPolicy.lateness_hours ? businessPolicy.lateness_hours : 0 ;
+    const latenessHour = businessPolicy?.lateness_hours || 0 ;
     const latenessFine = businessPolicy?.lateness_fine || 0;
     const tax = businessPolicy?.tax || 0;
     const pension = businessPolicy?.pension ||0;
 
-    const openTime = workingHours?.days?.[currentDay]?.open;
-    if(openTime){
-      const openDateTime = new Date(
-        now.toISOString().split("T")[0] + "T" + openTime + ":00Z"
+    if(!attendance){
+      attendance = await Attendance.create({staff_id})
 
-      )
+      const openTime = workingHours?.days?.[currentDay]?.open;
+      if(openTime){
+        const openDateTime = new Date(
+          now.toISOString().split("T")[0] + "T" + openTime + ":00Z"
 
-      const latenessThreshold = new Date(openDateTime)
-      latenessThreshold.setMinutes(openDateTime.getMinutes() + latenessHour * 60)
+        )
 
-      attendance.status = now <= openDateTime || now <= latenessThreshold ? "early" : "late";
-      if(attendance.status === "late"){
-        attendance.late_fine = latenessFine;
+        const latenessThreshold = new Date(openDateTime)
+        latenessThreshold.setMinutes(openDateTime.getMinutes() + latenessHour * 60)
 
+        attendance.status = now <= openDateTime || now <= latenessThreshold ? "early" : "late";
+        if(attendance.status === "late"){
+          attendance.late_fine = latenessFine;
+        }
+
+        await attendance.save();
       }
-      await attendance.save();
     }
 
     if(staffStatus === "fixed"){
@@ -335,33 +333,46 @@ const getUserPayslip = async(req, res)=>{
       return res.status(404).json({error:"Staff not found"});
     }
 
-    let payroll = [];
-    if(staff.employment_type === "contract")
-    {
-      payroll = await ContractStaff.find({staff_id: staff._id});
+    let formattedPayroll = {};
+    if(staff.employment_type === "contract"){
+      const payroll = await ContractStaff.find({staff_id: staff._id}) || [];
+
+      formattedPayroll = payroll.reduce((acc, item)=>{
+        const month = new Date(item.createdAt).toLocaleString("default", {month : "long"})
+        const year = new Date(item.createdAt).getFullYear().toString();
+
+        if(!acc[year]){
+          acc[year] = {};
+        }
+
+        if(!acc[year][month]){
+          acc[year][month] = []
+        };
+
+        acc[year][month].push(item);
+
+        return acc;
+
+      }, {});
+
+    }else if(staff.employment_type === "fixed"){
+
+      const payroll = await FixedStaff.find({staff_id: staff._id}) || [];
+
+      formattedPayroll = payroll.reduce((acc, item)=>{
+        const year = new Date(item.createdAt).getFullYear().toString();
+
+        if(!acc[year]){
+          acc[year] = []
+        };
+
+        acc[year].push(item);
+
+        return acc;
+
+      }, {});
+
     }
-    else if(staff.employment_type === "fixed")
-    {
-      payroll = await FixedStaff.find({staff_id: staff._id});
-    }
-
-    const formattedPayroll = payroll.reduce((acc, item)=>{
-      const month = new Date(item.createdAt).toLocaleString("default", {
-        month : "long",
-        year : "numeric"
-      })
-
-      const year = new Date(item.createdAt).getFullYear().toString();
-
-      if(!item[year]){
-        acc[year] = []
-      };
-
-      acc[year].push(item);
-
-      return acc;
-
-    }, {});
 
     res.status(200).json({formattedPayroll, staff})
     
@@ -419,6 +430,7 @@ const fetchWorkingHours =async(req,res)=>{
   }
 
 }
+
 
 module.exports = {
   login,

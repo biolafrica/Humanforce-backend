@@ -44,7 +44,7 @@ app.listen(PORT, ()=>{
 })
 
 //schedule clock out by 10pm
-cron.schedule("55 11 * * *", ()=>{
+cron.schedule("0 23 * * *", ()=>{
   autoClockOutJob();
 })
 

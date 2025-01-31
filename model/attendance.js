@@ -2,6 +2,8 @@ const mongoose = require("mongoose");
 const { type } = require("os");
 const Business = require ("./businessModel")
 
+const defaultTime = new Date(0).toISOString();
+
 const attendanceSchema = new mongoose.Schema({
   staff_id:{
     type : String
@@ -14,17 +16,17 @@ const attendanceSchema = new mongoose.Schema({
 
   clock_out:{
     type : Date,
-    default: 0
+    default: null
   }, 
 
   break_start:{
     type : Date,
-    default : 0
+    default : null
   }, 
 
   break_end:{
     type : Date,
-    default : 0
+    default : null
   }, 
 
   hours:{
@@ -59,8 +61,8 @@ attendanceSchema.pre("save", async function(next){
     const clock_out = new Date(this.clock_out)
     const clock_in = new Date(this.clock_in)
 
-    const break_start = this.break_start === 0 ? null : new Date(this.break_start);
-    const break_end  = this.break_end === 0 ? null : new Date(this.break_end);
+    const break_start = this.break_start ? new Date(this.break_start) : null;
+    const break_end  = this.break_end ? new Date(this.break_end): null;
 
     const totalTimeInHours = (clock_out - clock_in) / (1000 * 60 * 60);
     const roundedHours = parseFloat(totalTimeInHours.toFixed(2));
