@@ -8,12 +8,34 @@ const TokenBlacklist = require("../model/tokenBlacklist");
 const jwt = require("jsonwebtoken");
 const {ContractStaff, FixedStaff} = require("../model/payrollModel");
 const { adminAuthToken, authToken } = require("../Middleware/auth");
+const attendance = require("../model/attendance");
 
 
 const maxAge = 3*24*60*60;
 const jwtSecret = process.env.adminjwtSecret;
 const createToken = (id)=>{
   return jwt.sign({id}, jwtSecret, {expiresIn :maxAge})
+};
+
+const day = () =>{
+  const now = new Date();
+
+  const startOfDay = new Date(now)
+  startOfDay.setHours(0,0,0,0)
+
+  const endOfDay = new Date(now)
+  endOfDay.setHours(23,59,59,999);
+
+  
+  const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const currentMonthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
+  const startOfYear = new Date(now.getFullYear(), 0,1);
+  const endOfYear = new Date(now.getFullYear(), 11, 31, 23, 59, 59,999);
+
+
+  return{startOfDay, endOfDay, currentMonthStart, currentMonthEnd, startOfYear, endOfYear}
+
 }
 
 
@@ -124,7 +146,7 @@ const getSelectedUser = async(req, res)=>{
     res.status(500).json({error :error.message})
   }
 
-}
+};
 
 const postUser = async(req, res)=>{
   const {id} = req.params;
@@ -155,7 +177,7 @@ const postUser = async(req, res)=>{
     
   }
 
-}
+};
 
 
 const teamPost = async(req, res)=>{
@@ -208,7 +230,7 @@ const teamPost = async(req, res)=>{
     
   }
 
-}
+};
 
 const teamGet = async(req,res)=>{
   const token = req.headers.authorization?.split(" ")[1];
@@ -234,7 +256,7 @@ const teamGet = async(req,res)=>{
     
   }
 
-}
+};
 
 const teamEdit = async(req, res)=>{
   const {id} = req.params;
@@ -266,7 +288,7 @@ const teamEdit = async(req, res)=>{
     res.status(500).json({error :"An error occured while updating user"})
   }
 
-}
+};
 
 const teamDelete = async(req, res)=>{
   const {id} = req.params;
@@ -298,7 +320,7 @@ const teamDelete = async(req, res)=>{
     res.status(500).json({error :"An error occured while deleting team"})
     
   }
-}
+};
 
 // change to staff id instead of code
 const getSelectedTeam = async(req, res)=>{
@@ -335,7 +357,7 @@ const getSelectedTeam = async(req, res)=>{
     
   }
 
-}
+};
 
 
 const saveOrUpdateBusiness = async (req, res)=>{
@@ -377,7 +399,7 @@ const saveOrUpdateBusiness = async (req, res)=>{
     res.status(500).json({error:"Failed to save or update business"})
     
   }
-}
+};
 
 const businessGet = async(req, res)=>{
   const token = req.headers.authorization?.split(" ")[1];
@@ -402,7 +424,7 @@ const businessGet = async(req, res)=>{
     
   }
 
-}
+};
 
 const patchWorkingHours = async(req, res)=>{
   const {days} = req.body;
@@ -445,7 +467,7 @@ const patchWorkingHours = async(req, res)=>{
     res.status(500).json({message:"Error saving working hours", error})
   }
 
-}
+};
 
 const getWorkingHours = async(req, res)=>{
   const token = req.headers.authorization?.split(" ")[1];
@@ -466,7 +488,7 @@ const getWorkingHours = async(req, res)=>{
     
   }
 
-}
+};
 
 
 const getAttendances = async(req, res)=>{
@@ -500,7 +522,7 @@ const getAttendances = async(req, res)=>{
     
   }
   
-}
+};
 
 const getAttendance = async(req, res)=>{
   const {id} = req.params;
@@ -546,7 +568,7 @@ const getAttendance = async(req, res)=>{
     res.status(500).json({error : "Failed to fetch user attendance"});
     
   }
-}
+};
 
 
 const getAllPayroll = async(req, res)=>{
@@ -573,7 +595,7 @@ const getAllPayroll = async(req, res)=>{
     
   }
 
-}
+};
 
 const getSinglePayroll = async(req, res)=>{
   const {id} = req.params;
@@ -635,7 +657,7 @@ const getSinglePayroll = async(req, res)=>{
     
   }
 
-}
+};
 
 const postPayrollDetails = async(req, res)=>{
   const {id} = req.params;
@@ -650,9 +672,8 @@ const postPayrollDetails = async(req, res)=>{
       return res.status(401).json({error:"error authenticating user"});
     }
 
-    const currentDate = new Date();
-    const currentMonthStart = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-    const currentMonthEnd = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+
+    const {currentMonthStart, currentMonthEnd} = day();
 
     const user = await User.findById(id);
 
@@ -706,7 +727,7 @@ const postPayrollDetails = async(req, res)=>{
   
   }
 
-}
+};
 
 
 const login = async(req, res)=>{
@@ -743,6 +764,143 @@ const login = async(req, res)=>{
     
   }
 
+};
+
+
+const getDashboard = async(req, res)=>{
+  const token = req.headers.authorization?.split(" ")[1];
+  const {startOfDay, endOfDay, currentMonthStart, currentMonthEnd, startOfYear, endOfYear } = day();
+
+  try {
+    const decodedToken = await adminAuthToken(token);
+    if(!decodedToken){
+      return res.status(401).json({error:"error authenticating user"});
+    }
+
+    const today = [];
+    const thisMonth =[];
+    const thisYear = []
+
+    const dayAttendanceCount = await Attendance.countDocuments({
+      createdAt : {
+        $gte :startOfDay,
+        $lte : endOfDay
+      }
+    });
+    today.push(dayAttendanceCount);
+
+    const dayEarlyAttendanceCount = await Attendance.countDocuments({
+      status : "early",
+      createdAt : {
+        $gte :startOfDay,
+        $lte : endOfDay
+      },
+      
+    });
+    today.push(dayEarlyAttendanceCount);
+
+    const dayLateAttendanceCount = await Attendance.countDocuments({
+      status : "late",
+      createdAt : {
+        $gte :startOfDay,
+        $lte : endOfDay
+      }
+    });
+    today.push(dayLateAttendanceCount);
+
+    const monthAttendanceCount = await Attendance.countDocuments({
+      createdAt : {
+        $gte :currentMonthStart,
+        $lte : currentMonthEnd
+      }
+
+    });
+    thisMonth.push(monthAttendanceCount);
+
+    const monthEarlyAttendanceCount = await Attendance.countDocuments({
+      status : "early",
+      createdAt : {
+        $gte :currentMonthStart,
+        $lte : currentMonthEnd
+      }
+
+    });
+    thisMonth.push(monthEarlyAttendanceCount);
+
+    const monthLateAttendanceCount = await Attendance.countDocuments({
+      status : "late",
+      createdAt : {
+        $gte :currentMonthStart,
+        $lte : currentMonthEnd
+      }
+
+    });
+    thisMonth.push(monthLateAttendanceCount);
+
+    const yearAttendanceCount = await Attendance.countDocuments({
+      createdAt : {
+        $gte :startOfYear,
+        $lte : endOfYear
+      }
+
+
+    });
+    thisYear.push(yearAttendanceCount);
+
+    const yearEarlyAttendanceCount = await Attendance.countDocuments({
+      status : "early",
+      createdAt : {
+        $gte :startOfYear,
+        $lte : endOfYear
+      }
+
+
+    });
+    thisYear.push(yearEarlyAttendanceCount);
+
+    const yearLateAttendanceCount = await Attendance.countDocuments({
+      status : "late",
+      createdAt : {
+        $gte :startOfYear,
+        $lte : endOfYear
+      }
+
+
+    });
+    thisYear.push(yearLateAttendanceCount);
+
+    const allStaffCount = await User.countDocuments({status : "active"});
+
+    const contractStaffCount = await User.countDocuments({
+      employment_type : "contract",
+      status : "active"
+    });
+
+    const fixedStaffCount = await User.countDocuments({
+      employment_type : "fixed",
+      status : "active"
+    });
+
+    res.status(200).json({
+      attendance:{
+        today,
+        thisMonth,
+        thisYear,
+      },
+
+      staff:{
+        allStaffCount,
+        contractStaffCount,
+        fixedStaffCount
+      }
+    
+    })
+
+  } catch (error) {
+    console.error("Error fetching attendance dashboard numbers:", error);
+    res.status(500).json({error : "error fetching attendance dashboard numbers"});
+    
+  }
 }
 
 
@@ -766,5 +924,6 @@ module.exports = {
   postUser,
   teamDelete,
   teamEdit,
-  getSelectedTeam
+  getSelectedTeam,
+  getDashboard
 }

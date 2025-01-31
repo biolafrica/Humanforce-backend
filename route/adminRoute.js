@@ -29,6 +29,8 @@ router.get("/working-hours", adminController.getWorkingHours);
 
 router.post("/login", adminController.login);
 
+router.get("/dashboard", adminController.getDashboard);
+
 
 
 module.exports = router;
