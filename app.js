@@ -43,7 +43,7 @@ app.listen(PORT, ()=>{
   console.log(`connected to server on port ${PORT}`)
 })
 
-//schedule clock out by 10pm
+//schedule clock out by 11pm
 cron.schedule("0 23 * * *", ()=>{
   autoClockOutJob();
 })

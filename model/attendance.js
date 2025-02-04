@@ -1,8 +1,7 @@
 const mongoose = require("mongoose");
 const { type } = require("os");
-const Business = require ("./businessModel")
-
-const defaultTime = new Date(0).toISOString();
+const Business = require ("./businessModel");
+const doc = require("pdfkit");
 
 const attendanceSchema = new mongoose.Schema({
   staff_id:{
@@ -49,20 +48,25 @@ const attendanceSchema = new mongoose.Schema({
     default: Date.now,
   }
   
-})
+});
 
-attendanceSchema.pre("save", async function(next){
+
+attendanceSchema.post("findOneAndUpdate", async function(doc){
+
   try {
     const businessPolicy = await Business.findOne();
     const breakHour = businessPolicy?.break_hours || 0.5 ;
 
-    if(!this.clock_out) return next();
+    if(!doc.clock_out){
+      console.log("not clock out")
+      return;
+    } 
 
-    const clock_out = new Date(this.clock_out)
-    const clock_in = new Date(this.clock_in)
+    const clock_out = new Date(doc.clock_out)
+    const clock_in = new Date(doc.clock_in)
 
-    const break_start = this.break_start ? new Date(this.break_start) : null;
-    const break_end  = this.break_end ? new Date(this.break_end): null;
+    const break_start = doc.break_start ? new Date(doc.break_start) : null;
+    const break_end  = doc.break_end ? new Date(doc.break_end): null;
 
     const totalTimeInHours = (clock_out - clock_in) / (1000 * 60 * 60);
     const roundedHours = parseFloat(totalTimeInHours.toFixed(2));
@@ -78,16 +82,20 @@ attendanceSchema.pre("save", async function(next){
     if(roundedBreak <= 0 || roundedBreak < breakHour){
       roundedBreak = breakHour
     }
+    console.log("rounded-break", roundedBreak);
 
-    this.hours = roundedHours - roundedBreak;
+    await doc.model("Attendance").updateOne(
+      { _id: doc._id },
+      { hours: parseFloat(roundedHours - roundedBreak).toFixed(2) }
+    );
 
-    next();
+    console.log("Updated hours:", parseFloat(roundedHours - roundedBreak).toFixed(2));
+    
   } catch (error) {
-    next(error);
+    console.error("Error in post-update middleware:", error);
     
   }
-
-})
+});
 
 
 module.exports = mongoose.model ("Attendance", attendanceSchema);

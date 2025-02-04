@@ -36,13 +36,10 @@ const autoClockOutJob = async()=>{
     }
 
     const closeTime = workingHours.days[currentDay].close;
-
-    
-    const startOfDay = day().startOfDay;
-    const endOfDay = day().endOfDay;
+    const {startOfDay, endOfDay} = day();
 
     const attendances = await Attendance.find({
-      clock_out : 0,
+      clock_out : null,
       createdAt: {$gte: startOfDay, $lte:endOfDay},
     })
 
@@ -103,7 +100,7 @@ const autoSendPayrollEmail = async()=>{
   }
 
 
-  if(today === wages_day){
+  if(today.toLowerCase() === wages_day.toLowerCase()){
     const contractStaff = await User.find({employment_type: "contract"})
 
     const currentWeek = moment().format("YYYY-[W]W");

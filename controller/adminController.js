@@ -338,7 +338,7 @@ const getSelectedTeam = async(req, res)=>{
       return res.status(404).json({error: "Team not found"});
     };
 
-    const user = await User.findOne({staff_code : team.staff_code})
+    const user = await User.findOne({_id : team.staff_id})
     if(!user){
       return res.status(404).json({error: "user not found"});
     };
@@ -347,7 +347,7 @@ const getSelectedTeam = async(req, res)=>{
       firstname : user.firstname,
       lastname : user.lastname,
       role : team.team_role,
-      staff_code : team.staff_code
+      staff_code : team.staff_id
     })
 
     
@@ -614,33 +614,34 @@ const getSinglePayroll = async(req, res)=>{
       return res.status(404).json({error : "error fetching user"});
     }
 
-    let payroll = null
+    let userPayroll = null
     if(user.employment_type === "contract"){
 
-      let contractPayroll = await ContractStaff.find({staff_id : id}).sort({createdAt: 1});
+      userPayroll = await ContractStaff.find({staff_id : id}).sort({createdAt: 1});
 
-      if(!contractPayroll || contractPayroll.length === 0 ){
+      if(!userPayroll){
         return res.status(404).json({error : "No payroll data found for contract staff "});
       }
 
-      payroll = contractPayroll.reduce((acc, item) => {
-        const monthYear = new Date(item.createdAt).toLocaleString('default',{month: 'long', year:'numeric'});
-        if(!acc[monthYear]){
-          acc[monthYear] = [];
-        }
-        acc[monthYear].push(item)
-        return acc;
-        
-      }, {});
-
     }else if(user.employment_type === "fixed"){
 
-      payroll = await FixedStaff.find({staff_id : id})
-      if(!payroll || payroll.length === 0){
+      userPayroll = await FixedStaff.find({staff_id : id})
+
+      if(!userPayroll){
         return res.status(404).json({error : "no payroll data found for fixed staff"});
       }
 
     }
+
+    let payroll = userPayroll.reduce((acc, item) => {
+      const monthYear = new Date(item.createdAt).toLocaleString('default',{month: 'long', year:'numeric'});
+      if(!acc[monthYear]){
+        acc[monthYear] = [];
+      }
+      acc[monthYear].push(item)
+      return acc;
+      
+    }, {});
     
     
     res.status(200).json({
@@ -653,7 +654,9 @@ const getSinglePayroll = async(req, res)=>{
     
     
   } catch (error) {
+    console.log(error.message)
     res.status(500).json({error: error.message});
+
     
   }
 
