@@ -56,8 +56,12 @@ const login = async(req, res)=>{
     });
     
   } catch (error) {
-    console.log("Error logging in;", error);
-    res.status(500).json({error: error.message});
+    console.log("Error logging in;", error.message);
+    if(error.message === "Unexpected error occured"){
+      res.status(400).json({error: error.message});
+    }else{
+      res.status(500).json({error: error.message});
+    }
     
   }
 
@@ -187,7 +191,6 @@ const postClock = async(req, res)=>{
 // click on end button
 const postClocked = async(req, res)=>{
   const {token} = req.body;
-  
 
   try {
     const decodedToken = await authToken(token);

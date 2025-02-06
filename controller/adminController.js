@@ -763,8 +763,11 @@ const login = async(req, res)=>{
     
   } catch (error) {
     console.log("Error logging team;", error);
-    res.status(500).json({error: error.message});
-    
+     if(error.message === "Unexpected error occured"){
+      res.status(400).json({error: error.message});
+    }else{
+      res.status(500).json({error: error.message});
+    }
   }
 
 };
