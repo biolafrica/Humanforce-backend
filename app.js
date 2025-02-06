@@ -1,15 +1,16 @@
 require("dotenv").config();
-
 const express = require("express");
-const { default: mongoose } = require("mongoose");
-const adminRouter = require("./route/adminRoute");
-const userRouter = require("./route/userRoute");
+const path = require("path");
+const mongoose = require("mongoose");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const cron = require("node-cron");
 const {autoClockOutJob, autoSendPayrollEmail} = require("./Middleware/automation");
-const path = require("path");
+
+
+const adminRouter = require("./route/adminRoute");
+const userRouter = require("./route/userRoute");
 
 
 //setup express app
@@ -20,7 +21,7 @@ app.use(express.json());
 app.use(express.urlencoded({extended : true}));
 app.use(bodyParser.json());
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, "build")));
+
 
 //setup cors 
 const origin = process.env.origin;
@@ -31,13 +32,29 @@ app.use(
     credentials : true,
   })
 );
-// app.use(cors());
+
 
 //connect to database
 const URI = process.env.mongoDB_URI;
 mongoose.connect(URI)
-.then(result => console.log('connected to the database'))
+.then(()=> console.log('connected to the database'))
 .catch(error => console.log(error));
+
+const clientBuildPath = path.join(__dirname, "build");
+app.use(express.static(clientBuildPath));
+
+
+//Route management
+app.use("/admin", adminRouter);
+app.use(userRouter);
+
+app.get("*", (req, res)=>{
+  res.sendFile(path.join(clientBuildPath, "index.html"), (err) =>{
+    if(err){
+      res.status(500).send("Error loading react app");
+    }
+  });
+});
 
 //Start server
 const PORT = process.env.PORT;
@@ -53,16 +70,3 @@ cron.schedule("0 23 * * *", ()=>{
 cron.schedule("0 0 * * *", ()=>{
   autoSendPayrollEmail();
 })
-
-//Route management
-app.use("/admin", adminRouter);
-app.use(userRouter);
-app.get("*", (req, res)=>{
-  res.sendFile(path.join(__dirname, "build", "index.html"), (err) =>{
-    if(err){
-      res.status(500).send(err);
-    }
-  });
-});
-
-
