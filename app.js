@@ -58,7 +58,11 @@ cron.schedule("0 0 * * *", ()=>{
 app.use("/admin", adminRouter);
 app.use(userRouter);
 app.get("*", (req, res)=>{
-  res.sendFile(path.join(__dirname, "build", "index.html"))
-})
+  res.sendFile(path.join(__dirname, "build", "index.html"), (err) =>{
+    if(err){
+      res.status(500).send(err);
+    }
+  });
+});
 
 
