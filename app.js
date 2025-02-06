@@ -9,7 +9,7 @@ const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const cron = require("node-cron");
 const {autoClockOutJob, autoSendPayrollEmail} = require("./Middleware/automation");
-
+const path = require("path");
 
 
 //setup express app
@@ -20,6 +20,7 @@ app.use(express.json());
 app.use(express.urlencoded({extended : true}));
 app.use(bodyParser.json());
 app.use(cookieParser());
+app.use(express.static(path.join(__dirname, "build")));
 
 //setup cors 
 const origin = process.env.origin;
@@ -56,5 +57,8 @@ cron.schedule("0 0 * * *", ()=>{
 //Route management
 app.use("/admin", adminRouter);
 app.use(userRouter);
+app.get("*", (req, res)=>{
+  res.sendFile(path.join(__dirname, "build", "index.html"))
+})
 
 
