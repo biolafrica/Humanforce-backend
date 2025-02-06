@@ -24,7 +24,7 @@ app.use(cookieParser());
 
 
 //setup cors 
-const origin = process.env.origin;
+const origin = process.env.origin || "http://localhost:3000";
 app.use(
   cors({
     origin,
