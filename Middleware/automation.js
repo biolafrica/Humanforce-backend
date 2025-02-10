@@ -55,6 +55,11 @@ const autoClockOutJob = async()=>{
       clockOutTime.setHours(closeHours, closeMinutes, 0, 0);
 
       attendance.clock_out = clockOutTime;
+      const clock_out = new Date(attendance.clock_out);
+      const clock_in = new Date(attendance.clock_in);
+      const totalTimeInHours = (clock_out - clock_in) / (1000 * 60 * 60);
+      const roundedHours = parseFloat(totalTimeInHours.toFixed(2));
+      attendance.hours = roundedHours;
       return attendance.save();
     })
 
