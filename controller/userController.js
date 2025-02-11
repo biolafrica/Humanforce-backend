@@ -110,6 +110,7 @@ const postClock = async(req, res)=>{
     const latenessFine = businessPolicy?.lateness_fine || 0;
     const tax = businessPolicy?.tax || 0;
     const pension = businessPolicy?.pension ||0;
+    
 
     if(!attendance){
       attendance = await Attendance.create({staff_id})
@@ -131,52 +132,54 @@ const postClock = async(req, res)=>{
 
         await attendance.save();
       }
-    }
 
-    if(staffStatus === "fixed"){
-      let fixedPayroll = await FixedStaff.findOne({
-        staff_id,
-        createdAt: {
-          $gte: currentMonthStart,
-          $lte: currentMonthEnd,
-        },
-      }) 
+      if(staffStatus === "fixed"){
+        let fixedPayroll = await FixedStaff.findOne({
+          staff_id,
+          createdAt: {
+            $gte: currentMonthStart,
+            $lte: currentMonthEnd,
+          },
+        }) 
+        
+        if(!fixedPayroll){
+          fixedPayroll = await FixedStaff.create({
+            staff_id,
+            basic_pay : fixedBasicPay,
+            tax : tax >= 0 ? (tax/100) * fixedBasicPay : 0,
+            pension : pension >= 0 ? (pension/100) * fixedBasicPay : 0,
+            lateness_fine :latenessFine
+          });
+        }else{
+          fixedPayroll.lateness_fine += latenessFine;
+          await fixedPayroll.save()
+
+        }
        
-      if(!fixedPayroll){
-        fixedPayroll = await FixedStaff.create({
+      } else if(staffStatus === "contract"){
+        let contractPayroll = await ContractStaff.findOne({
           staff_id,
-          basic_pay : fixedBasicPay,
-          tax : tax >= 0 ? (tax/100) * fixedBasicPay : 0,
-          pension : pension >= 0 ? (pension/100) * fixedBasicPay : 0,
-          lateness_fine :latenessFine
+          week:currentWeek,
         });
+
+        if(!contractPayroll){
+          contractPayroll = await ContractStaff.create({
+            staff_id,
+            week: currentWeek,
+            tax_percentage: tax,
+            pension_percentage: pension
+          });
+          
+        }else{
+          contractPayroll.days[currentDay].isPresent = true;
+          contractPayroll.days[currentDay].lateness_fine = latenessFine;
+          await contractPayroll.save();
+        }
+     
       }
 
-      //check if it kepps updating on all clicks
-      fixedPayroll.lateness_fine += latenessFine;
-      await fixedPayroll.save()
-
-
-    } else if(staffStatus === "contract"){
-      let contractPayroll = await ContractStaff.findOne({
-        staff_id,
-        week:currentWeek,
-      });
-
-      if(!contractPayroll){
-        contractPayroll = await ContractStaff.create({
-          staff_id,
-          week: currentWeek,
-          tax_percentage: tax,
-          pension_percentage: pension
-        });
-      }
-
-      contractPayroll.days[currentDay].isPresent = true;
-      contractPayroll.days[currentDay].lateness_fine = latenessFine;
-      await contractPayroll.save();
     }
-    
+
     res.status(200).json({id : attendance._id})
     
   } catch (error) {
