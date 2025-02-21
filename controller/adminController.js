@@ -241,7 +241,7 @@ const teamGet = async(req,res)=>{
       return res.status(401).json({error:"error authenticating user"});
     }
 
-    const users = await User.find();
+    const users = await User.find({status : "active"});
     const teams = await Team.find();
 
     if(!users || !teams){

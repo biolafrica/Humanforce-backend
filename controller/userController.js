@@ -1,7 +1,7 @@
 const User = require("../model/userModel");
 const jwt = require("jsonwebtoken");
 const Attendance = require("../model/attendance");
-const {requireAuth, authToken} = require('../Middleware/auth');
+const {authToken} = require('../Middleware/auth');
 const WorkingHours = require("../model/workingHoursModel");
 const Business = require("../model/businessModel");
 const {ContractStaff, FixedStaff} = require("../model/payrollModel");
@@ -169,7 +169,7 @@ const postClock = async(req, res)=>{
             tax_percentage: tax,
             pension_percentage: pension
           });
-          
+
         }else{
           contractPayroll.days[currentDay].isPresent = true;
           contractPayroll.days[currentDay].lateness_fine = latenessFine;

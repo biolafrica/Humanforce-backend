@@ -25,7 +25,7 @@ const businessSchema = new mongoose.Schema({
   },
   business_phone_number :{
     type : Number,
-    minLength : [11, 'minimum of eleven digit required']
+    minLength : [10, 'minimum of ten digit required']
   },
   salary_date :{
     type : Number,

@@ -39,7 +39,7 @@ const userSchema = new mongoose.Schema({
   phone_number:{
     required : [true, "please enter staff phone number"],
     type : Number,
-    minLength : [11, 'minimum of eleven digit required']
+    minLength : [10, 'minimum of ten digit required']
   },
 
   address:{
@@ -55,7 +55,7 @@ const userSchema = new mongoose.Schema({
   next_of_kin_phone_number :{
     required : [true, "please enter staff next of kin phone number"],
     type : Number,
-    minLength : [11, 'minimum of eleven digit required']
+    minLength : [10, 'minimum of ten digit required']
   },
 
   staff_code:{
